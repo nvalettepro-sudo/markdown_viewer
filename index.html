@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="fr" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MD Viewer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
+<link id="hl-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<style>
+:root {
+  --bg:        #0e0f14;
+  --surface:   #161820;
+  --border:    #2a2d3a;
+  --accent:    #e8b84b;
+  --accent2:   #4b9ee8;
+  --accent3:   #4be8a0;
+  --text:      #d4d8e8;
+  --muted:     #6b7090;
+  --code-bg:   #1a1c26;
+  --tag-bg:    #1e2130;
+  --font-mono: 'JetBrains Mono', monospace;
+  --font-body: 'Crimson Pro', Georgia, serif;
+}
+[data-theme="light"] {
+  --bg:      #f5f3ee;
+  --surface: #ffffff;
+  --border:  #d8d4c8;
+  --accent:  #c4832a;
+  --accent2: #2a72c4;
+  --accent3: #1a9e6a;
+  --text:    #2a2620;
+  --muted:   #8a8070;
+  --code-bg: #eceae4;
+  --tag-bg:  #ede9e0;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; overflow: hidden; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-body);
+  font-size: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Header ── */
+header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 16px;
+  height: 48px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.logo {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--accent);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.logo span { color: var(--muted); }
+.stats {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  gap: 12px;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+.stats b { color: var(--text); }
+
+/* ── Barre URL ── */
+.url-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 0 10px;
+  height: 30px;
+  transition: border-color 0.15s;
+}
+.url-bar:focus-within { border-color: var(--accent3); }
+.url-bar-icon { font-size: 13px; flex-shrink: 0; color: var(--muted); }
+#url-input {
+  flex: 1;
+  background: none;
+  border: none;
+  outline: none;
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  min-width: 0;
+}
+#url-input::placeholder { color: var(--muted); }
+.url-fetch-btn {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 3px 10px;
+  border: 1px solid var(--accent3);
+  background: transparent;
+  color: var(--accent3);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.15s;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+.url-fetch-btn:hover { background: var(--accent3); color: #0e0f14; }
+.url-fetch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.header-actions {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+.btn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 5px 10px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--accent); color: var(--accent); }
+.btn.pdf-btn { border-color: #e8834b44; color: #e8834b; }
+.btn.pdf-btn:hover { border-color: #e8834b; }
+.btn-icon {
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 3px;
+  font-size: 15px;
+  transition: all 0.15s;
+}
+.btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 6px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+  flex-wrap: wrap;
+}
+.toolbar-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
+.tbtn {
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  border-radius: 3px;
+  transition: all 0.12s;
+  white-space: nowrap;
+}
+.tbtn:hover { background: var(--tag-bg); color: var(--accent); }
+.tbtn.h-btn { color: var(--accent2); }
+
+/* ── Layout ── */
+.workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+}
+.pane {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+.pane-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  padding: 6px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.divider {
+  width: 5px;
+  background: var(--border);
+  cursor: col-resize;
+  flex-shrink: 0;
+  transition: background 0.15s;
+}
+.divider:hover, .divider.dragging { background: var(--accent); }
+
+/* ── Éditeur ── */
+#editor {
+  flex: 1;
+  width: 100%;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-mono);
+  font-size: 13.5px;
+  line-height: 1.7;
+  border: none;
+  outline: none;
+  resize: none;
+  padding: 24px 20px;
+  tab-size: 2;
+  caret-color: var(--accent);
+}
+#editor::selection { background: rgba(232,184,75,0.2); }
+
+/* ── Aperçu ── */
+#preview-wrap {
+  flex: 1;
+  overflow-y: auto;
+  padding: 32px 40px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border) transparent;
+}
+.md-body { max-width: 780px; }
+.md-body h1 { font-size: 2.4em; font-weight: 600; color: var(--text); line-height: 1.2; margin: 0.4em 0 0.6em; }
+.md-body h2 { font-size: 1.6em; font-weight: 600; color: var(--text); margin: 1.8em 0 0.5em; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.md-body h3 { font-size: 1.25em; font-weight: 600; margin: 1.4em 0 0.4em; color: var(--accent); }
+.md-body h4 { font-size: 1.1em; font-weight: 600; margin: 1.2em 0 0.3em; color: var(--accent2); }
+.md-body h5, .md-body h6 { font-size: 1em; font-weight: 600; margin: 1em 0 0.3em; color: var(--muted); }
+.md-body p { line-height: 1.8; margin-bottom: 1em; }
+.md-body a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
+.md-body a:hover { border-color: var(--accent2); }
+.md-body strong { color: var(--text); font-weight: 700; }
+.md-body em { font-style: italic; color: var(--muted); }
+.md-body ul, .md-body ol { padding-left: 1.6em; margin-bottom: 1em; }
+.md-body li { margin-bottom: 0.3em; line-height: 1.7; }
+.md-body blockquote { border-left: 3px solid var(--accent); margin: 1.2em 0; padding: 8px 16px; background: var(--tag-bg); color: var(--muted); font-style: italic; }
+.md-body hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
+.md-body table { width: 100%; border-collapse: collapse; margin: 1.2em 0; font-size: 0.93em; }
+.md-body th { background: var(--tag-bg); padding: 8px 14px; text-align: left; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--border); }
+.md-body td { padding: 8px 14px; border-bottom: 1px solid var(--border); }
+.md-body tr:last-child td { border-bottom: none; }
+.md-body code { font-family: var(--font-mono); font-size: 0.85em; background: var(--code-bg); padding: 2px 6px; border-radius: 3px; color: var(--accent); border: 1px solid var(--border); }
+.md-body pre { background: var(--code-bg) !important; border: 1px solid var(--border); border-radius: 6px; overflow-x: auto; margin: 1.2em 0; padding: 0; }
+.md-body pre code { display: block; padding: 18px 20px !important; background: none !important; border: none !important; color: var(--text); font-size: 13px; line-height: 1.6; }
+.md-body img { max-width: 100%; border-radius: 4px; }
+
+/* ── Frontmatter ── */
+.frontmatter-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
+.frontmatter-table th { text-align: left; padding: 8px 14px; background: var(--tag-bg); color: var(--muted); font-weight: 600; width: 130px; border-bottom: 1px solid var(--border); }
+.frontmatter-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
+.frontmatter-table tr:last-child th, .frontmatter-table tr:last-child td { border-bottom: none; }
+.tag-chip { display: inline-block; padding: 2px 8px; background: var(--tag-bg); border: 1px solid var(--border); border-radius: 20px; font-size: 11px; color: var(--accent2); margin: 2px 3px 2px 0; }
+
+/* ── Status bar ── */
+.status-bar { height: 24px; background: var(--surface); border-top: 1px solid var(--border); display: flex; align-items: center; gap: 16px; padding: 0 16px; font-family: var(--font-mono); font-size: 10px; color: var(--muted); flex-shrink: 0; }
+.status-accent { color: var(--accent); }
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--muted); }
+
+/* ── Drop overlay ── */
+.drop-overlay { display: none; position: fixed; inset: 0; background: rgba(232,184,75,0.07); border: 2px dashed var(--accent); z-index: 100; flex-direction: column; align-items: center; justify-content: center; font-family: var(--font-mono); font-size: 18px; color: var(--accent); letter-spacing: 0.1em; gap: 12px; }
+.drop-overlay.active { display: flex; }
+.drop-overlay small { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
+
+/* ── Toast ── */
+.toast { position: fixed; bottom: 36px; right: 20px; background: var(--accent); color: #0e0f14; font-family: var(--font-mono); font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 3px; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 200; }
+.toast.show { opacity: 1; transform: translateY(0); }
+
+/* ── Overlay progression (PDF + URL) ── */
+.progress-overlay { display: none; position: fixed; inset: 0; background: rgba(14,15,20,0.85); z-index: 300; align-items: center; justify-content: center; }
+.progress-overlay.active { display: flex; }
+.progress-box { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 32px 48px; display: flex; flex-direction: column; align-items: center; gap: 16px; min-width: 340px; }
+.progress-title { font-family: var(--font-mono); font-size: 13px; color: var(--text); font-weight: 600; letter-spacing: 0.06em; }
+.progress-bar-wrap { width: 100%; height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
+.progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; width: 0%; }
+.progress-bar.url-color { background: var(--accent3); }
+.progress-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: center; max-width: 280px; word-break: break-all; }
+</style>
+</head>
+<body>
+
+<!-- ── Header ── -->
+<header>
+  <div class="logo">MD<span>.</span>Viewer</div>
+  <div class="stats">
+    <span id="stat-read">0 min</span>
+    <span><b id="stat-words">0</b> mots</span>
+    <span><b id="stat-chars">0</b> chars</span>
+  </div>
+
+  <!-- ── Barre URL ── -->
+  <div class="url-bar">
+    <span class="url-bar-icon">🌐</span>
+    <input id="url-input" type="url" placeholder="https://exemple.com — colle une URL et appuie sur Entrée" autocomplete="off" spellcheck="false">
+    <button class="url-fetch-btn" id="url-btn" onclick="fetchURL()">Importer</button>
+  </div>
+
+  <div class="header-actions">
+    <button class="btn" onclick="importFile()">📂 MD</button>
+    <button class="btn pdf-btn" onclick="importPDF()">📄 PDF</button>
+    <button class="btn" onclick="exportMD()">⬇ MD</button>
+    <button class="btn" onclick="exportHTML()">⬇ HTML</button>
+    <button class="btn-icon" onclick="toggleTheme()" id="theme-btn" title="Thème">🌙</button>
+  </div>
+</header>
+
+<!-- ── Toolbar ── -->
+<div class="toolbar">
+  <button class="tbtn h-btn" onclick="insert('# ')">H1</button>
+  <button class="tbtn h-btn" onclick="insert('## ')">H2</button>
+  <button class="tbtn h-btn" onclick="insert('### ')">H3</button>
+  <button class="tbtn h-btn" onclick="insert('#### ')">H4</button>
+  <div class="toolbar-sep"></div>
+  <button class="tbtn" onclick="wrap('**','**')"><b>B</b></button>
+  <button class="tbtn" onclick="wrap('*','*')"><i>I</i></button>
+  <button class="tbtn" onclick="wrap('~~','~~')"><s>S</s></button>
+  <button class="tbtn" onclick="wrap('`','`')">&#96;&#96;</button>
+  <div class="toolbar-sep"></div>
+  <button class="tbtn" onclick="insert('- ')">— List</button>
+  <button class="tbtn" onclick="insert('1. ')">1. List</button>
+  <button class="tbtn" onclick="insert('> ')">❝ Quote</button>
+  <button class="tbtn" onclick="insertHR()">— HR</button>
+  <div class="toolbar-sep"></div>
+  <button class="tbtn" onclick="wrapLink()">🔗 Lien</button>
+  <button class="tbtn" onclick="insertCode()">{ } Code</button>
+  <button class="tbtn" onclick="insertTable()">⊞ Table</button>
+  <div class="toolbar-sep"></div>
+  <button class="tbtn" onclick="toggleSync()" id="sync-btn" style="color:var(--accent)">⇅ Sync</button>
+</div>
+
+<!-- ── Workspace ── -->
+<div class="workspace" id="workspace">
+  <div class="pane" id="editor-pane">
+    <div class="pane-label">Éditeur</div>
+    <textarea id="editor" spellcheck="false" placeholder="Colle du Markdown, ouvre un .md, glisse un .pdf, ou colle une URL dans la barre ci-dessus…"></textarea>
+  </div>
+  <div class="divider" id="divider"></div>
+  <div class="pane" id="preview-pane">
+    <div class="pane-label">Aperçu</div>
+    <div id="preview-wrap">
+      <div class="md-body" id="preview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Status bar ── -->
+<div class="status-bar">
+  <span>Ln <b id="sb-line">1</b> · Col <b id="sb-col">1</b></span>
+  <span class="status-accent" id="sb-mode">ÉDITION</span>
+  <span id="sb-file">Sans titre.md</span>
+  <span style="margin-left:auto">HTML Standalone · MD + PDF + URL</span>
+</div>
+
+<!-- ── Éléments cachés ── -->
+<div class="drop-overlay" id="drop-overlay">
+  ⬇ Déposer un fichier
+  <small>.md · .markdown · .txt · .pdf</small>
+</div>
+<div class="toast" id="toast"></div>
+<a id="dl-link" style="display:none"></a>
+<input type="file" id="file-input" accept=".md,.markdown,.txt" style="display:none" onchange="handleFileInput(this)">
+<input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePDFInput(this)">
+
+<!-- ── Overlay de progression ── -->
+<div class="progress-overlay" id="progress-overlay">
+  <div class="progress-box">
+    <div class="progress-title" id="progress-title">Chargement…</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    <div class="progress-sub" id="progress-sub"></div>
+  </div>
+</div>
+
+<script>
+/* ══════════════════════════════════════════════
+   PDF.js worker
+══════════════════════════════════════════════ */
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* ══════════════════════════════════════════════
+   marked.js
+══════════════════════════════════════════════ */
+marked.setOptions({
+  highlight: (code, lang) => {
+    if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value;
+    return hljs.highlightAuto(code).value;
+  },
+  breaks: true, gfm: true,
+});
+
+/* ══════════════════════════════════════════════
+   State
+══════════════════════════════════════════════ */
+const editor      = document.getElementById('editor');
+const preview     = document.getElementById('preview');
+const previewWrap = document.getElementById('preview-wrap');
+let syncScroll = true;
+let isDark     = true;
+let debounce   = null;
+let currentFile = 'Sans titre.md';
+
+/* ══════════════════════════════════════════════
+   Contenu par défaut
+══════════════════════════════════════════════ */
+editor.value = `---
+title: Bienvenue dans MD Viewer
+tags: ["markdown", "pdf", "url", "standalone"]
+---
+
+# Bienvenue dans MD Viewer
+
+## ✨ Trois façons d'importer du contenu
+
+### 📂 Fichier Markdown
+Clique sur **MD** ou glisse un fichier *.md / .txt* dans la fenêtre.
+
+### 📄 Fichier PDF
+Clique sur **PDF** ou glisse un *.pdf* — le texte est extrait et converti en Markdown.
+
+### 🌐 Page Web (nouveau !)
+Colle une URL dans la **barre verte** en haut et clique **Importer**.
+La page est récupérée via proxy et convertie en Markdown propre.
+
+---
+
+## 💡 Raccourcis clavier
+
+| Raccourci  | Action              |
+|------------|---------------------|
+| Ctrl+O     | Ouvrir .md          |
+| Ctrl+P     | Ouvrir PDF          |
+| Ctrl+U     | Importer URL        |
+| Ctrl+S     | Exporter .md        |
+| Ctrl+E     | Exporter .html      |
+| Ctrl+B     | Gras                |
+| Ctrl+I     | Italique            |
+
+> Essaie : colle \`https://fr.wikipedia.org/wiki/BIM\` dans la barre URL !
+`;
+
+render();
+updateStats();
+
+/* ══════════════════════════════════════════════
+   Frontmatter
+══════════════════════════════════════════════ */
+function parseFrontmatter(text) {
+  const match = text.match(/^---\s*\n([\s\S]*?)\n---\s*\n/);
+  if (!match) return { meta: {}, body: text };
+  const raw = match[1], body = text.slice(match[0].length), meta = {};
+  raw.split('\n').forEach(line => {
+    const i = line.indexOf(':');
+    if (i < 0) return;
+    const key = line.slice(0, i).trim();
+    const val = line.slice(i + 1).trim().replace(/^["']|["']$/g, '');
+    if (key) meta[key] = val;
+  });
+  return { meta, body };
+}
+function frontmatterToHTML(meta) {
+  if (!Object.keys(meta).length) return '';
+  let rows = '';
+  for (const [k, v] of Object.entries(meta)) {
+    let cell = v.startsWith('[') && v.endsWith(']')
+      ? v.slice(1,-1).split(',').map(s => `<span class="tag-chip">${s.trim().replace(/^["']|["']$/g,'')}</span>`).join('')
+      : `<span>${v}</span>`;
+    rows += `<tr><th>${k}</th><td>${cell}</td></tr>`;
+  }
+  return `<table class="frontmatter-table">${rows}</table>`;
+}
+
+/* ══════════════════════════════════════════════
+   Rendu Markdown
+══════════════════════════════════════════════ */
+function render() {
+  clearTimeout(debounce);
+  debounce = setTimeout(() => {
+    const { meta, body } = parseFrontmatter(editor.value);
+    preview.innerHTML = frontmatterToHTML(meta) + marked.parse(body);
+    preview.querySelectorAll('pre code:not(.hljs)').forEach(el => hljs.highlightElement(el));
+    updateStats();
+  }, 150);
+}
+
+function updateStats() {
+  const text = editor.value;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  document.getElementById('stat-words').textContent = words.toLocaleString('fr');
+  document.getElementById('stat-chars').textContent = text.length.toLocaleString('fr');
+  document.getElementById('stat-read').textContent  = Math.max(1, Math.round(words / 200)) + ' min';
+}
+
+function updateCursor() {
+  const pos = editor.selectionStart;
+  const lines = editor.value.substring(0, pos).split('\n');
+  document.getElementById('sb-line').textContent = lines.length;
+  document.getElementById('sb-col').textContent  = lines[lines.length - 1].length + 1;
+}
+editor.addEventListener('keyup',  updateCursor);
+editor.addEventListener('click',  updateCursor);
+editor.addEventListener('input',  render);
+
+/* ══════════════════════════════════════════════
+   Sync scroll
+══════════════════════════════════════════════ */
+function toggleSync() {
+  syncScroll = !syncScroll;
+  document.getElementById('sync-btn').style.color = syncScroll ? 'var(--accent)' : 'var(--muted)';
+  toast('Sync ' + (syncScroll ? 'activé' : 'désactivé'));
+}
+editor.addEventListener('scroll', () => {
+  if (!syncScroll) return;
+  const ratio = editor.scrollTop / Math.max(1, editor.scrollHeight - editor.clientHeight);
+  previewWrap.scrollTop = ratio * (previewWrap.scrollHeight - previewWrap.clientHeight);
+});
+
+/* ══════════════════════════════════════════════
+   Toolbar
+══════════════════════════════════════════════ */
+function wrap(b, a) {
+  const s = editor.selectionStart, e = editor.selectionEnd;
+  editor.setRangeText(b + (editor.value.substring(s,e) || 'texte') + a, s, e, 'select');
+  editor.focus(); render();
+}
+function insert(p) {
+  const s = editor.selectionStart, ls = editor.value.lastIndexOf('\n', s-1) + 1;
+  editor.setRangeText(p, ls, ls, 'end'); editor.focus(); render();
+}
+function insertHR()    { const s=editor.selectionStart; editor.setRangeText('\n---\n',s,s,'end'); editor.focus(); render(); }
+function wrapLink()    { const s=editor.selectionStart,e=editor.selectionEnd; editor.setRangeText(`[${editor.value.substring(s,e)||'lien'}](https://url.com)`,s,e,'end'); editor.focus(); render(); }
+function insertCode()  { const s=editor.selectionStart; editor.setRangeText('\n```\n# code\n```\n',s,s,'end'); editor.focus(); render(); }
+function insertTable() { const s=editor.selectionStart; editor.setRangeText('\n| Col 1 | Col 2 | Col 3 |\n|-------|-------|-------|\n| A     | B     | C     |\n',s,s,'end'); editor.focus(); render(); }
+
+/* ══════════════════════════════════════════════
+   Thème
+══════════════════════════════════════════════ */
+function toggleTheme() {
+  isDark = !isDark;
+  document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
+  const hl = document.getElementById('hl-theme');
+  if (hl) hl.href = isDark
+    ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css'
+    : 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css';
+}
+
+/* ══════════════════════════════════════════════
+   Divider resize
+══════════════════════════════════════════════ */
+const divider = document.getElementById('divider');
+const workspace = document.getElementById('workspace');
+const editorPane = document.getElementById('editor-pane');
+const previewPane = document.getElementById('preview-pane');
+let isResizing = false;
+divider.addEventListener('mousedown', () => { isResizing=true; divider.classList.add('dragging'); document.body.style.cursor='col-resize'; document.body.style.userSelect='none'; });
+document.addEventListener('mousemove', e => { if(!isResizing)return; const r=workspace.getBoundingClientRect(); const p=Math.min(Math.max(((e.clientX-r.left)/r.width)*100,15),85); editorPane.style.flex='none'; editorPane.style.width=p+'%'; previewPane.style.flex='1'; });
+document.addEventListener('mouseup', () => { if(!isResizing)return; isResizing=false; divider.classList.remove('dragging'); document.body.style.cursor=''; document.body.style.userSelect=''; });
+
+/* ══════════════════════════════════════════════
+   Fichiers .md
+══════════════════════════════════════════════ */
+function importFile() { document.getElementById('file-input').click(); }
+function handleFileInput(input) {
+  const file = input.files[0]; if(!file) return;
+  currentFile = file.name;
+  document.getElementById('sb-file').textContent = currentFile;
+  document.getElementById('sb-mode').textContent = 'ÉDITION';
+  const r = new FileReader();
+  r.onload = e => { editor.value = e.target.result; render(); toast('✓ ' + currentFile); };
+  r.readAsText(file, 'UTF-8'); input.value = '';
+}
+
+/* ══════════════════════════════════════════════
+   Drag & drop
+══════════════════════════════════════════════ */
+const dropOverlay = document.getElementById('drop-overlay');
+document.addEventListener('dragover', e => { e.preventDefault(); dropOverlay.classList.add('active'); });
+document.addEventListener('dragleave', e => { if(!e.relatedTarget) dropOverlay.classList.remove('active'); });
+document.addEventListener('drop', e => {
+  e.preventDefault(); dropOverlay.classList.remove('active');
+  const file = e.dataTransfer.files[0]; if(!file) return;
+  if (file.name.toLowerCase().endsWith('.pdf')) { convertPDF(file); return; }
+  if (file.name.endsWith('.md') || file.name.endsWith('.markdown') || file.name.endsWith('.txt')) {
+    currentFile = file.name;
+    document.getElementById('sb-file').textContent = currentFile;
+    document.getElementById('sb-mode').textContent = 'ÉDITION';
+    const r = new FileReader();
+    r.onload = ev => { editor.value = ev.target.result; render(); toast('✓ ' + currentFile); };
+    r.readAsText(file, 'UTF-8');
+  } else { toast('⚠ .md, .txt ou .pdf attendu'); }
+});
+
+/* ══════════════════════════════════════════════
+   PDF
+══════════════════════════════════════════════ */
+function importPDF() { document.getElementById('pdf-input').click(); }
+function handlePDFInput(input) { const f=input.files[0]; if(f) convertPDF(f); input.value=''; }
+
+async function convertPDF(file) {
+  showProgress('📄 Conversion PDF → Markdown', '', false);
+  try {
+    const ab  = await file.arrayBuffer();
+    const doc = await pdfjsLib.getDocument({ data: ab }).promise;
+    const N   = doc.numPages;
+    const base = file.name.replace(/\.pdf$/i, '');
+    currentFile = base + '.md';
+    document.getElementById('sb-file').textContent = currentFile;
+    document.getElementById('sb-mode').textContent = 'PDF→MD';
+
+    // Passe 1 : calibrer les tailles
+    let sizes = [];
+    for (let p=1; p<=N; p++) {
+      const pg = await doc.getPage(p);
+      const ct = await pg.getTextContent();
+      ct.items.forEach(it => { if(it.str?.trim()) { const h=Math.abs(it.transform[3]); if(h>0) sizes.push(h); } });
+    }
+    sizes.sort((a,b)=>a-b);
+    const med  = sizes[Math.floor(sizes.length*0.5)] || 10;
+    const h1t  = med*1.8, h2t = med*1.4, h3t = med*1.15;
+
+    let pages = [];
+    for (let p=1; p<=N; p++) {
+      setProgress(Math.round((p/N)*100), `Page ${p} / ${N}…`);
+      const pg = await doc.getPage(p);
+      const ct = await pg.getTextContent();
+      const vp = pg.getViewport({ scale:1 });
+      const lm = new Map();
+      ct.items.forEach(it => {
+        if(!it.str) return;
+        const y = Math.round(vp.height - it.transform[5]);
+        const s = Math.abs(it.transform[3]);
+        if(!lm.has(y)) lm.set(y, { texts:[], maxSize:0 });
+        const l = lm.get(y); l.texts.push(it.str); if(s>l.maxSize) l.maxSize=s;
+      });
+      const lines = [...lm.entries()].sort((a,b)=>a[0]-b[0]).map(([,l])=>l);
+      let md = []; let prevBlank = false;
+      lines.forEach(line => {
+        const raw=line.texts.join(' ').trim(); const sz=line.maxSize;
+        if(!raw||raw.length<2) { if(!prevBlank) md.push(''); prevBlank=true; return; }
+        prevBlank=false;
+        if(sz>=h1t) { md.push('',`# ${raw}`,''); return; }
+        if(sz>=h2t) { md.push('',`## ${raw}`,''); return; }
+        if(sz>=h3t) { md.push('',`### ${raw}`,''); return; }
+        const bm=raw.match(/^[•·▪▸◆\-\*]\s+(.+)/); if(bm) { md.push(`- ${bm[1].trim()}`); return; }
+        const nm=raw.match(/^(\d+)[.)]\s+(.+)/); if(nm) { md.push(`${nm[1]}. ${nm[2].trim()}`); return; }
+        md.push(raw);
+      });
+      pages.push(md.join('\n')); if(p<N) pages.push('\n---\n');
+    }
+
+    const date = new Date().toLocaleDateString('fr-FR');
+    editor.value = `---\ntitle: ${base}\nsource: PDF converti le ${date}\npages: ${N}\n---\n\n`
+      + pages.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+    render(); hideProgress(); toast(`✓ PDF converti — ${N} page${N>1?'s':''}`);
+  } catch(err) { hideProgress(); toast('⚠ Erreur PDF : ' + err.message); }
+}
+
+/* ══════════════════════════════════════════════
+   ★ IMPORT URL → MARKDOWN ★
+
+   Fonctionnement :
+   1. Valider l'URL saisie
+   2. Passer par allorigins.win (proxy public CORS-free)
+   3. Récupérer le HTML brut de la page
+   4. Parser le DOM avec DOMParser (intégré au navigateur)
+   5. Supprimer les éléments inutiles (nav, footer, script, ads…)
+   6. Extraire titre, meta description, contenu principal
+   7. Convertir les balises HTML → syntaxe Markdown
+      (h1-h6, p, ul/ol/li, a, strong, em, code, pre, blockquote, table, img, hr)
+   8. Nettoyer et injecter dans l'éditeur avec frontmatter
+══════════════════════════════════════════════ */
+
+/* Entrée depuis la barre URL — Entrée ou bouton */
+document.getElementById('url-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter') fetchURL();
+});
+
+async function fetchURL() {
+  const input = document.getElementById('url-input');
+  const btn   = document.getElementById('url-btn');
+  let url     = input.value.trim();
+
+  if (!url) { toast('⚠ Colle une URL d\'abord'); input.focus(); return; }
+
+  // Ajouter https:// si manquant
+  if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+
+  // Valider le format URL
+  try { new URL(url); } catch { toast('⚠ URL invalide'); return; }
+
+  btn.disabled = true;
+  showProgress('🌐 Import URL → Markdown', url, true);
+
+  try {
+    // ── Cascade de proxies CORS (essayés dans l'ordre) ──
+    const PROXIES = [
+      {
+        name: 'corsproxy.io',
+        build: u => 'https://corsproxy.io/?' + encodeURIComponent(u),
+        extract: async r => await r.text(),
+      },
+      {
+        name: 'allorigins.win',
+        build: u => 'https://api.allorigins.win/get?url=' + encodeURIComponent(u),
+        extract: async r => { const j = await r.json(); return j.contents; },
+      },
+      {
+        name: 'htmlpreview proxy',
+        build: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u),
+        extract: async r => await r.text(),
+      },
+    ];
+
+    let html = null;
+    let lastErr = 'inconnu';
+
+    for (let i = 0; i < PROXIES.length; i++) {
+      const proxy = PROXIES[i];
+      setProgress(10 + i * 20, 'Proxy ' + (i+1) + '/' + PROXIES.length + ' : ' + proxy.name + '…');
+      try {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), 12000);
+        const resp = await fetch(proxy.build(url), { signal: controller.signal })
+          .finally(() => clearTimeout(timer));
+        if (!resp.ok) { lastErr = 'HTTP ' + resp.status; continue; }
+        const content = await proxy.extract(resp);
+        if (content && content.length > 100) { html = content; break; }
+        lastErr = 'Réponse vide';
+      } catch(e) {
+        lastErr = e.name === 'AbortError' ? 'Délai dépassé' : e.message;
+      }
+    }
+
+    if (!html) throw new Error('Tous les proxies ont échoué — ' + lastErr);
+
+    setProgress(70, 'Page récupérée, conversion…');
+    const md = htmlToMarkdown(html, url);
+
+    setProgress(100, 'Terminé !');
+
+    // Nom de fichier depuis le domaine
+    const domain = new URL(url).hostname.replace('www.', '');
+    const slug   = new URL(url).pathname.split('/').filter(Boolean).pop() || 'page';
+    currentFile  = domain + '_' + slug + '.md';
+    document.getElementById('sb-file').textContent = currentFile;
+    document.getElementById('sb-mode').textContent = 'URL→MD';
+
+    editor.value = md;
+    input.value  = '';
+    render();
+    hideProgress();
+    toast('✓ Page importée depuis ' + domain);
+
+  } catch(err) {
+    hideProgress();
+    let msg = err.message;
+    if (msg.includes('timeout') || msg.includes('abort')) msg = 'Délai dépassé — page trop lourde ou hors ligne';
+    if (msg.includes('Failed to fetch')) msg = 'Connexion impossible — vérifie internet';
+    toast('⚠ ' + msg);
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+/* ── Convertisseur HTML → Markdown ── */
+function htmlToMarkdown(html, sourceUrl) {
+  // Parser le HTML dans un DOM virtuel (ne s'affiche pas)
+  const parser = new DOMParser();
+  const doc    = parser.parseFromString(html, 'text/html');
+
+  // ── Extraire métadonnées ──
+  const title  = doc.querySelector('title')?.textContent?.trim() || '';
+  const desc   = doc.querySelector('meta[name="description"]')?.getAttribute('content')?.trim() || '';
+  const ogTitle = doc.querySelector('meta[property="og:title"]')?.getAttribute('content')?.trim() || title;
+  const domain = new URL(sourceUrl).hostname;
+  const date   = new Date().toLocaleDateString('fr-FR');
+
+  // ── Supprimer les éléments parasites ──
+  const trash = [
+    'script','style','noscript','iframe','nav','footer','header',
+    'aside','form','button','input','select','textarea',
+    '[role="navigation"]','[role="banner"]','[role="complementary"]',
+    '[class*="cookie"]','[class*="popup"]','[class*="modal"]',
+    '[class*="sidebar"]','[class*="advertisement"]','[class*="ads"]',
+    '[id*="cookie"]','[id*="sidebar"]','[id*="banner"]','[id*="ad-"]',
+    '.nav','.menu','.breadcrumb','.pagination','.social','.share',
+    '.comment','.comments','.related','.newsletter','.footer','.header'
+  ];
+  trash.forEach(sel => {
+    try { doc.querySelectorAll(sel).forEach(el => el.remove()); } catch {}
+  });
+
+  // ── Trouver le contenu principal ──
+  const mainEl =
+    doc.querySelector('main') ||
+    doc.querySelector('article') ||
+    doc.querySelector('[role="main"]') ||
+    doc.querySelector('.content') ||
+    doc.querySelector('#content') ||
+    doc.querySelector('.post-content') ||
+    doc.querySelector('.article-content') ||
+    doc.querySelector('.entry-content') ||
+    doc.body;
+
+  // ── Convertir les noeuds DOM en Markdown ──
+  function nodeToMD(node, depth) {
+    depth = depth || 0;
+    if (node.nodeType === 3) {
+      // Nœud texte
+      return node.textContent.replace(/\s+/g, ' ');
+    }
+    if (node.nodeType !== 1) return '';
+
+    const tag = node.tagName.toLowerCase();
+    const children = () => [...node.childNodes].map(c => nodeToMD(c, depth)).join('');
+
+    // Titres
+    if (tag === 'h1') return '\n\n# '   + node.textContent.trim() + '\n\n';
+    if (tag === 'h2') return '\n\n## '  + node.textContent.trim() + '\n\n';
+    if (tag === 'h3') return '\n\n### ' + node.textContent.trim() + '\n\n';
+    if (tag === 'h4') return '\n\n#### '+ node.textContent.trim() + '\n\n';
+    if (tag === 'h5') return '\n\n##### '+ node.textContent.trim() + '\n\n';
+    if (tag === 'h6') return '\n\n###### '+ node.textContent.trim() + '\n\n';
+
+    // Paragraphe
+    if (tag === 'p') {
+      const t = children().trim();
+      return t ? '\n\n' + t + '\n\n' : '';
+    }
+
+    // Liens
+    if (tag === 'a') {
+      const href = node.getAttribute('href') || '';
+      const text = node.textContent.trim();
+      if (!text) return '';
+      // Liens relatifs → absolus
+      let absHref = href;
+      try {
+        if (href && !href.startsWith('#') && !href.startsWith('javascript')) {
+          absHref = new URL(href, sourceUrl).href;
+        }
+      } catch {}
+      if (!href || href.startsWith('#') || href.startsWith('javascript')) return text;
+      return `[${text}](${absHref})`;
+    }
+
+    // Gras / italique
+    if (tag === 'strong' || tag === 'b') return `**${children().trim()}**`;
+    if (tag === 'em'     || tag === 'i') return `*${children().trim()}*`;
+
+    // Code
+    if (tag === 'code') {
+      const parent = node.parentElement?.tagName?.toLowerCase();
+      if (parent === 'pre') return node.textContent; // géré par pre
+      return '`' + node.textContent.replace(/`/g, "'") + '`';
+    }
+    if (tag === 'pre') {
+      const code = node.querySelector('code');
+      const lang = code?.className?.match(/language-(\w+)/)?.[1] || '';
+      const text = (code || node).textContent;
+      return '\n\n```' + lang + '\n' + text.trim() + '\n```\n\n';
+    }
+
+    // Listes
+    if (tag === 'ul') {
+      return '\n' + [...node.querySelectorAll(':scope > li')]
+        .map(li => '- ' + li.textContent.trim().replace(/\n\s*/g, ' '))
+        .join('\n') + '\n\n';
+    }
+    if (tag === 'ol') {
+      return '\n' + [...node.querySelectorAll(':scope > li')]
+        .map((li, i) => `${i+1}. ` + li.textContent.trim().replace(/\n\s*/g, ' '))
+        .join('\n') + '\n\n';
+    }
+    if (tag === 'li') return ''; // géré par ul/ol
+
+    // Citation
+    if (tag === 'blockquote') {
+      const t = node.textContent.trim().replace(/\n/g, '\n> ');
+      return '\n\n> ' + t + '\n\n';
+    }
+
+    // Séparateur
+    if (tag === 'hr') return '\n\n---\n\n';
+
+    // Image
+    if (tag === 'img') {
+      const alt = node.getAttribute('alt') || '';
+      const src = node.getAttribute('src') || '';
+      let absSrc = src;
+      try { if (src && !src.startsWith('data:')) absSrc = new URL(src, sourceUrl).href; } catch {}
+      return alt ? `\n\n![${alt}](${absSrc})\n\n` : '';
+    }
+
+    // Tableaux
+    if (tag === 'table') {
+      const rows = [...node.querySelectorAll('tr')];
+      if (!rows.length) return '';
+      const toMDRow = (tr) => '| ' + [...tr.querySelectorAll('th,td')]
+        .map(c => c.textContent.trim().replace(/\|/g,'\\|').replace(/\n/g,' '))
+        .join(' | ') + ' |';
+      const header = rows[0];
+      const cells  = [...header.querySelectorAll('th,td')];
+      const sep    = '|' + cells.map(() => '---|').join('');
+      const headerMD = toMDRow(header);
+      const bodyMD   = rows.slice(1).map(toMDRow).join('\n');
+      return '\n\n' + headerMD + '\n' + sep + '\n' + bodyMD + '\n\n';
+    }
+
+    // Div / section / article → récursion
+    if (['div','section','article','main','figure','figcaption','span'].includes(tag)) {
+      return children();
+    }
+
+    // br
+    if (tag === 'br') return '\n';
+
+    // Tout le reste → texte brut
+    return children();
+  }
+
+  // ── Appliquer la conversion ──
+  let body = nodeToMD(mainEl);
+
+  // ── Nettoyage ──
+  body = body
+    .replace(/\n{4,}/g, '\n\n\n')      // max 3 sauts consécutifs
+    .replace(/[ \t]+\n/g, '\n')        // espaces en fin de ligne
+    .replace(/\n\n([-*] )/g, '\n$1')   // listes collées
+    .trim();
+
+  // ── Frontmatter ──
+  const fm = [
+    '---',
+    `title: "${ogTitle.replace(/"/g, "'")}"`,
+    `source: ${sourceUrl}`,
+    `domain: ${domain}`,
+    desc ? `description: "${desc.slice(0,120).replace(/"/g,"'")}"` : '',
+    `imported: ${date}`,
+    '---',
+  ].filter(Boolean).join('\n');
+
+  return fm + '\n\n' + body;
+}
+
+/* ══════════════════════════════════════════════
+   Overlay progression (partagé PDF + URL)
+══════════════════════════════════════════════ */
+function showProgress(title, sub, isUrl) {
+  document.getElementById('progress-title').textContent = title;
+  document.getElementById('progress-sub').textContent   = sub;
+  const bar = document.getElementById('progress-bar');
+  bar.style.width = '5%';
+  bar.className   = 'progress-bar' + (isUrl ? ' url-color' : '');
+  document.getElementById('progress-overlay').classList.add('active');
+}
+function setProgress(pct, sub) {
+  document.getElementById('progress-bar').style.width = pct + '%';
+  document.getElementById('progress-sub').textContent = sub;
+}
+function hideProgress() {
+  setTimeout(() => document.getElementById('progress-overlay').classList.remove('active'), 400);
+}
+
+/* ══════════════════════════════════════════════
+   Export MD
+══════════════════════════════════════════════ */
+function exportMD() {
+  dl(new Blob([editor.value], { type: 'text/markdown;charset=utf-8' }),
+     currentFile.replace(/\.[^.]+$/, '') + '.md');
+  toast('✓ Export .md réussi');
+}
+
+/* ══════════════════════════════════════════════
+   Export HTML standalone
+══════════════════════════════════════════════ */
+function exportHTML() {
+  const { meta, body } = parseFrontmatter(editor.value);
+  const fmHTML   = frontmatterToHTML(meta);
+  const bodyHTML = marked.parse(body);
+  const title    = (meta.title || currentFile).replace(/\.[^.]+$/, '').replace(/"/g,'');
+  const full = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>${title}</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>
+<style>
+body{font-family:Georgia,serif;max-width:860px;margin:60px auto;padding:0 24px;line-height:1.8;color:#1a1a1a;background:#fff;font-size:17px}
+h1,h2,h3,h4{font-weight:600;margin-top:1.8em}
+h2{border-bottom:1px solid #ddd;padding-bottom:6px}h3{color:#c4832a}h4{color:#2a72c4}
+code{background:#f0f0f0;padding:2px 5px;border-radius:3px;font-size:.88em;font-family:monospace}
+pre{background:#f5f5f5;padding:0;border-radius:6px;overflow-x:auto;margin:1.2em 0}
+pre code{display:block;padding:16px 20px;background:none;font-size:13px}
+blockquote{border-left:3px solid #ccc;padding:8px 16px;color:#666;margin:1.2em 0;background:#f9f9f7}
+table{width:100%;border-collapse:collapse;margin:1.2em 0}
+th,td{padding:8px 12px;border:1px solid #ddd;text-align:left}
+th{background:#f5f5f5;font-size:.85em;text-transform:uppercase;font-family:monospace}
+a{color:#2563eb}img{max-width:100%}hr{border:none;border-top:1px solid #eee;margin:2em 0}
+.frontmatter-table th{background:#f0f0f0;width:130px;font-family:monospace}
+.tag-chip{display:inline-block;padding:2px 8px;background:#e8eaf0;border-radius:20px;font-size:11px;margin:2px 3px}
+</style>
+</head>
+<body>
+${fmHTML}${bodyHTML}
+<script>hljs.highlightAll();<\/script>
+</body>
+</html>`;
+  dl(new Blob([full], { type: 'text/html;charset=utf-8' }),
+     currentFile.replace(/\.[^.]+$/, '') + '.html');
+  toast('✓ Export .html réussi');
+}
+
+function dl(blob, filename) {
+  const link = document.getElementById('dl-link');
+  link.href = URL.createObjectURL(blob);
+  link.download = filename;
+  link.click();
+  setTimeout(() => URL.revokeObjectURL(link.href), 5000);
+}
+
+/* ══════════════════════════════════════════════
+   Toast
+══════════════════════════════════════════════ */
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ══════════════════════════════════════════════
+   Raccourcis clavier
+══════════════════════════════════════════════ */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey) {
+    if (e.key === 'o') { e.preventDefault(); importFile(); }
+    if (e.key === 'p') { e.preventDefault(); importPDF(); }
+    if (e.key === 'u') { e.preventDefault(); document.getElementById('url-input').focus(); document.getElementById('url-input').select(); }
+    if (e.key === 's') { e.preventDefault(); exportMD(); }
+    if (e.key === 'e') { e.preventDefault(); exportHTML(); }
+    if (e.key === 'b') { e.preventDefault(); wrap('**','**'); }
+    if (e.key === 'i') { e.preventDefault(); wrap('*','*'); }
+  }
+  if (e.key === 'Tab' && document.activeElement === editor) {
+    e.preventDefault();
+    editor.setRangeText('  ', editor.selectionStart, editor.selectionEnd, 'end');
+    render();
+  }
+});
+</script>
+</body>
+</html>
