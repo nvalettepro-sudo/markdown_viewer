@@ -3,6 +3,7 @@
 Visualiseur Markdown standalone hébergé sur GitHub Pages — aucune installation, aucun serveur.
 
 **[→ Ouvrir l'app](https://nvalettepro-sudo.github.io/markdown_viewer/)**
+---------------------------------------------------------------
 https://nvalettepro-sudo.github.io/markdown_viewer/
 
 ## Fonctionnalités
