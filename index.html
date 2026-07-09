@@ -10,6 +10,7 @@
 <link id="hl-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://unpkg.com/tesseract.js@5/dist/tesseract.min.js"></script>
 <style>
 :root {
   --bg:        #0e0f14;
@@ -331,6 +332,7 @@ header {
   <div class="header-actions">
     <button class="btn" onclick="importFile()">📂 MD</button>
     <button class="btn pdf-btn" onclick="importPDF()">📄 PDF</button>
+    <button class="btn" style="border-color:#4be8a044;color:#4be8a0" onmouseover="this.style.background='#4be8a0';this.style.color='#0e0f14'" onmouseout="this.style.background='';this.style.color='#4be8a0'" onclick="importImage()">🖼 IMG</button>
     <button class="btn" onclick="exportMD()">⬇ MD</button>
     <button class="btn" onclick="exportHTML()">⬇ HTML</button>
     <button class="btn-icon" onclick="toggleTheme()" id="theme-btn" title="Thème">🌙</button>
@@ -387,12 +389,13 @@ header {
 <!-- ── Éléments cachés ── -->
 <div class="drop-overlay" id="drop-overlay">
   ⬇ Déposer un fichier
-  <small>.md · .markdown · .txt · .pdf</small>
+  <small>.md · .markdown · .txt · .pdf · .jpg · .png · .gif · .webp</small>
 </div>
 <div class="toast" id="toast"></div>
 <a id="dl-link" style="display:none"></a>
 <input type="file" id="file-input" accept=".md,.markdown,.txt" style="display:none" onchange="handleFileInput(this)">
 <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePDFInput(this)">
+<input type="file" id="img-input" accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff" style="display:none" onchange="handleImageInput(this)">
 
 <!-- ── Overlay de progression ── -->
 <div class="progress-overlay" id="progress-overlay">
@@ -615,6 +618,7 @@ document.addEventListener('drop', e => {
   e.preventDefault(); dropOverlay.classList.remove('active');
   const file = e.dataTransfer.files[0]; if(!file) return;
   if (file.name.toLowerCase().endsWith('.pdf')) { convertPDF(file); return; }
+  if (/\.(jpe?g|png|gif|webp|bmp|tiff?)$/i.test(file.name)) { convertImage(file); return; }
   if (file.name.endsWith('.md') || file.name.endsWith('.markdown') || file.name.endsWith('.txt')) {
     currentFile = file.name;
     document.getElementById('sb-file').textContent = currentFile;
@@ -688,6 +692,51 @@ async function convertPDF(file) {
       + pages.join('\n').replace(/\n{3,}/g,'\n\n').trim();
     render(); hideProgress(); toast(`✓ PDF converti — ${N} page${N>1?'s':''}`);
   } catch(err) { hideProgress(); toast('⚠ Erreur PDF : ' + err.message); }
+}
+
+/* ══════════════════════════════════════════════
+   OCR IMAGE → MARKDOWN
+══════════════════════════════════════════════ */
+function importImage() { document.getElementById('img-input').click(); }
+function handleImageInput(input) { const f = input.files[0]; if (f) convertImage(f); input.value = ''; }
+
+async function convertImage(file) {
+  showProgress('🖼 OCR Image → Markdown', file.name, false);
+  const base = file.name.replace(/\.[^.]+$/, '');
+  currentFile = base + '.md';
+  document.getElementById('sb-file').textContent = currentFile;
+  document.getElementById('sb-mode').textContent = 'OCR→MD';
+
+  try {
+    const { data: { text } } = await Tesseract.recognize(file, 'fra+eng', {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          setProgress(Math.round(m.progress * 100), 'Reconnaissance… ' + Math.round(m.progress * 100) + '%');
+        } else {
+          setProgress(10, m.status);
+        }
+      }
+    });
+
+    if (!text || !text.trim()) throw new Error('Aucun texte détecté dans l\'image');
+
+    // Nettoyer le texte brut OCR
+    const body = text
+      .replace(/\r\n/g, '\n')
+      .replace(/[ \t]+\n/g, '\n')
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
+
+    const date = new Date().toLocaleDateString('fr-FR');
+    editor.value = `---\ntitle: ${base}\nsource: OCR image — ${date}\nfichier: ${file.name}\n---\n\n${body}`;
+
+    render();
+    hideProgress();
+    toast('✓ OCR terminé — ' + file.name);
+  } catch (err) {
+    hideProgress();
+    toast('⚠ OCR échoué : ' + err.message);
+  }
 }
 
 /* ══════════════════════════════════════════════
