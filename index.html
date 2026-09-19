@@ -646,13 +646,27 @@ async function convertPDF(file) {
     document.getElementById('sb-file').textContent = currentFile;
     document.getElementById('sb-mode').textContent = 'PDF→MD';
 
-    // Passe 1 : calibrer les tailles
-    let sizes = [];
+    // Passe 1 : calibrer les tailles + compter les chars extraits
+    let sizes = [], totalChars = 0;
+    const allContents = [];
     for (let p=1; p<=N; p++) {
       const pg = await doc.getPage(p);
       const ct = await pg.getTextContent();
-      ct.items.forEach(it => { if(it.str?.trim()) { const h=Math.abs(it.transform[3]); if(h>0) sizes.push(h); } });
+      allContents.push({ pg, ct });
+      ct.items.forEach(it => {
+        if(it.str?.trim()) {
+          totalChars += it.str.trim().length;
+          const h=Math.abs(it.transform[3]); if(h>0) sizes.push(h);
+        }
+      });
     }
+
+    // Détection PDF scanné : moins de 20 chars par page en moyenne → OCR
+    if (totalChars / N < 20) {
+      await convertPDFwithOCR(doc, N, base);
+      return;
+    }
+
     sizes.sort((a,b)=>a-b);
     const med  = sizes[Math.floor(sizes.length*0.5)] || 10;
     const h1t  = med*1.8, h2t = med*1.4, h3t = med*1.15;
@@ -660,8 +674,7 @@ async function convertPDF(file) {
     let pages = [];
     for (let p=1; p<=N; p++) {
       setProgress(Math.round((p/N)*100), `Page ${p} / ${N}…`);
-      const pg = await doc.getPage(p);
-      const ct = await pg.getTextContent();
+      const { pg, ct } = allContents[p-1];
       const vp = pg.getViewport({ scale:1 });
       const lm = new Map();
       ct.items.forEach(it => {
@@ -692,6 +705,45 @@ async function convertPDF(file) {
       + pages.join('\n').replace(/\n{3,}/g,'\n\n').trim();
     render(); hideProgress(); toast(`✓ PDF converti — ${N} page${N>1?'s':''}`);
   } catch(err) { hideProgress(); toast('⚠ Erreur PDF : ' + err.message); }
+}
+
+/* PDF scanné : rendu canvas page par page + OCR Tesseract */
+async function convertPDFwithOCR(doc, N, base) {
+  document.getElementById('sb-mode').textContent = 'PDF→OCR→MD';
+  const date = new Date().toLocaleDateString('fr-FR');
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  const pages = [];
+
+  for (let p = 1; p <= N; p++) {
+    setProgress(Math.round((p / N) * 90), `OCR page ${p} / ${N}…`);
+    const pg = await doc.getPage(p);
+    const vp = pg.getViewport({ scale: 2 }); // scale 2 = meilleure résolution OCR
+    canvas.width  = vp.width;
+    canvas.height = vp.height;
+    await pg.render({ canvasContext: ctx, viewport: vp }).promise;
+
+    const blob = await new Promise(res => canvas.toBlob(res, 'image/png'));
+    const { data: { text } } = await Tesseract.recognize(blob, 'fra+eng', {
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          const overall = ((p - 1) + m.progress) / N;
+          setProgress(Math.round(overall * 90), `OCR page ${p} / ${N} — ${Math.round(m.progress * 100)}%`);
+        }
+      }
+    });
+
+    const cleaned = text.replace(/\r\n/g, '\n').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
+    if (cleaned) pages.push(cleaned);
+    if (p < N) pages.push('\n---\n');
+  }
+
+  setProgress(100, 'Terminé !');
+  editor.value = `---\ntitle: ${base}\nsource: PDF scanné — OCR le ${date}\npages: ${N}\n---\n\n`
+    + pages.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  render();
+  hideProgress();
+  toast(`✓ OCR PDF — ${N} page${N > 1 ? 's' : ''}`);
 }
 
 /* ══════════════════════════════════════════════
