@@ -437,6 +437,14 @@ let isDark     = true;
 let debounce   = null;
 let currentFile = 'Sans titre.md';
 
+function setEditorContent(text) {
+  editor.focus();
+  editor.select();
+  document.execCommand('insertText', false, text);
+  // fallback si execCommand non supporté (rare)
+  if (editor.value !== text) { editor.value = text; }
+}
+
 /* ══════════════════════════════════════════════
    Contenu par défaut
 ══════════════════════════════════════════════ */
@@ -604,7 +612,7 @@ function handleFileInput(input) {
   document.getElementById('sb-file').textContent = currentFile;
   document.getElementById('sb-mode').textContent = 'ÉDITION';
   const r = new FileReader();
-  r.onload = e => { editor.value = e.target.result; render(); toast('✓ ' + currentFile); };
+  r.onload = e => { setEditorContent(e.target.result); render(); toast('✓ ' + currentFile); };
   r.readAsText(file, 'UTF-8'); input.value = '';
 }
 
@@ -624,7 +632,7 @@ document.addEventListener('drop', e => {
     document.getElementById('sb-file').textContent = currentFile;
     document.getElementById('sb-mode').textContent = 'ÉDITION';
     const r = new FileReader();
-    r.onload = ev => { editor.value = ev.target.result; render(); toast('✓ ' + currentFile); };
+    r.onload = ev => { setEditorContent(ev.target.result); render(); toast('✓ ' + currentFile); };
     r.readAsText(file, 'UTF-8');
   } else { toast('⚠ .md, .txt ou .pdf attendu'); }
 });
@@ -701,8 +709,8 @@ async function convertPDF(file) {
     }
 
     const date = new Date().toLocaleDateString('fr-FR');
-    editor.value = `---\ntitle: ${base}\nsource: PDF converti le ${date}\npages: ${N}\n---\n\n`
-      + pages.join('\n').replace(/\n{3,}/g,'\n\n').trim();
+    setEditorContent(`---\ntitle: ${base}\nsource: PDF converti le ${date}\npages: ${N}\n---\n\n`
+      + pages.join('\n').replace(/\n{3,}/g,'\n\n').trim());
     render(); hideProgress(); toast(`✓ PDF converti — ${N} page${N>1?'s':''}`);
   } catch(err) { hideProgress(); toast('⚠ Erreur PDF : ' + err.message); }
 }
@@ -739,8 +747,8 @@ async function convertPDFwithOCR(doc, N, base) {
   }
 
   setProgress(100, 'Terminé !');
-  editor.value = `---\ntitle: ${base}\nsource: PDF scanné — OCR le ${date}\npages: ${N}\n---\n\n`
-    + pages.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+  setEditorContent(`---\ntitle: ${base}\nsource: PDF scanné — OCR le ${date}\npages: ${N}\n---\n\n`
+    + pages.join('\n').replace(/\n{3,}/g, '\n\n').trim());
   render();
   hideProgress();
   toast(`✓ OCR PDF — ${N} page${N > 1 ? 's' : ''}`);
@@ -780,7 +788,7 @@ async function convertImage(file) {
       .trim();
 
     const date = new Date().toLocaleDateString('fr-FR');
-    editor.value = `---\ntitle: ${base}\nsource: OCR image — ${date}\nfichier: ${file.name}\n---\n\n${body}`;
+    setEditorContent(`---\ntitle: ${base}\nsource: OCR image — ${date}\nfichier: ${file.name}\n---\n\n${body}`);
 
     render();
     hideProgress();
@@ -881,7 +889,7 @@ async function fetchURL() {
     document.getElementById('sb-file').textContent = currentFile;
     document.getElementById('sb-mode').textContent = 'URL→MD';
 
-    editor.value = md;
+    setEditorContent(md);
     input.value  = '';
     render();
     hideProgress();
