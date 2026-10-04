@@ -333,6 +333,7 @@ header {
     <button class="btn" onclick="importFile()">📂 MD</button>
     <button class="btn pdf-btn" onclick="importPDF()">📄 PDF</button>
     <button class="btn" style="border-color:#4be8a044;color:#4be8a0" onmouseover="this.style.background='#4be8a0';this.style.color='#0e0f14'" onmouseout="this.style.background='';this.style.color='#4be8a0'" onclick="importImage()">🖼 IMG</button>
+    <button class="btn" style="border-color:#9b59b644;color:#9b59b6" onmouseover="this.style.background='#9b59b6';this.style.color='#fff'" onmouseout="this.style.background='';this.style.color='#9b59b6'" onclick="importHTML()">🌐 HTML</button>
     <button class="btn" onclick="exportMD()">⬇ MD</button>
     <button class="btn" onclick="exportHTML()">⬇ HTML</button>
     <button class="btn-icon" onclick="toggleTheme()" id="theme-btn" title="Thème">🌙</button>
@@ -391,13 +392,14 @@ header {
 <!-- ── Éléments cachés ── -->
 <div class="drop-overlay" id="drop-overlay">
   ⬇ Déposer un fichier
-  <small>.md · .markdown · .txt · .pdf · .jpg · .png · .gif · .webp</small>
+  <small>.md · .txt · .pdf · .jpg · .png · .html</small>
 </div>
 <div class="toast" id="toast"></div>
 <a id="dl-link" style="display:none"></a>
 <input type="file" id="file-input" accept=".md,.markdown,.txt" style="display:none" onchange="handleFileInput(this)">
 <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePDFInput(this)">
 <input type="file" id="img-input" accept=".jpg,.jpeg,.png,.gif,.webp,.bmp,.tiff" style="display:none" onchange="handleImageInput(this)">
+<input type="file" id="html-input" accept=".html,.htm" style="display:none" onchange="handleHTMLInput(this)">
 
 <!-- ── Overlay de progression ── -->
 <div class="progress-overlay" id="progress-overlay">
@@ -478,6 +480,7 @@ La page est récupérée via proxy et convertie en Markdown propre.
 | Ctrl+O     | Ouvrir .md          |
 | Ctrl+P     | Ouvrir PDF          |
 | Ctrl+U     | Importer URL        |
+| Ctrl+H     | Importer HTML       |
 | Ctrl+S     | Exporter .md        |
 | Ctrl+E     | Exporter .html      |
 | Ctrl+B     | Gras                |
@@ -629,6 +632,7 @@ document.addEventListener('drop', e => {
   const file = e.dataTransfer.files[0]; if(!file) return;
   if (file.name.toLowerCase().endsWith('.pdf')) { convertPDF(file); return; }
   if (/\.(jpe?g|png|gif|webp|bmp|tiff?)$/i.test(file.name)) { convertImage(file); return; }
+  if (/\.html?$/i.test(file.name)) { convertHTMLFile(file); return; }
   if (file.name.endsWith('.md') || file.name.endsWith('.markdown') || file.name.endsWith('.txt')) {
     currentFile = file.name;
     document.getElementById('sb-file').textContent = currentFile;
@@ -754,6 +758,33 @@ async function convertPDFwithOCR(doc, N, base) {
   render();
   hideProgress();
   toast(`✓ OCR PDF — ${N} page${N > 1 ? 's' : ''}`);
+}
+
+/* ══════════════════════════════════════════════
+   IMPORT HTML → MARKDOWN
+══════════════════════════════════════════════ */
+function importHTML() { document.getElementById('html-input').click(); }
+function handleHTMLInput(input) { const f = input.files[0]; if (f) convertHTMLFile(f); input.value = ''; }
+
+function convertHTMLFile(file) {
+  const base = file.name.replace(/\.html?$/i, '');
+  const r = new FileReader();
+  r.onload = e => {
+    try {
+      // Utiliser le nom du fichier comme sourceUrl de base pour résoudre les liens relatifs
+      const fakeBase = 'file:///' + file.name;
+      const md = htmlToMarkdown(e.target.result, fakeBase);
+      currentFile = base + '.md';
+      document.getElementById('sb-file').textContent = currentFile;
+      document.getElementById('sb-mode').textContent = 'HTML→MD';
+      setEditorContent(md);
+      render();
+      toast('✓ HTML importé — ' + file.name);
+    } catch(err) {
+      toast('⚠ Erreur HTML : ' + err.message);
+    }
+  };
+  r.readAsText(file, 'UTF-8');
 }
 
 /* ══════════════════════════════════════════════
@@ -1278,6 +1309,7 @@ document.addEventListener('keydown', e => {
     if (e.key === 'o') { e.preventDefault(); importFile(); }
     if (e.key === 'p') { e.preventDefault(); importPDF(); }
     if (e.key === 'u') { e.preventDefault(); document.getElementById('url-input').focus(); document.getElementById('url-input').select(); }
+    if (e.key === 'h') { e.preventDefault(); importHTML(); }
     if (e.key === 's') { e.preventDefault(); exportMD(); }
     if (e.key === 'e') { e.preventDefault(); exportHTML(); }
     if (e.key === 'b') { e.preventDefault(); wrap('**','**'); }
