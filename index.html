@@ -413,7 +413,7 @@ header {
   <span id="sb-file">Sans titre.md</span>
   <span style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span style="color:var(--border)">|</span>
-  <span>v1.5.1 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">04/10/2026</span></span>
+  <span>v1.5.2 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">04/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -675,7 +675,7 @@ document.addEventListener('drop', e => {
     const r = new FileReader();
     r.onload = ev => { setEditorContent(ev.target.result); render(); toast('✓ ' + currentFile); };
     r.readAsText(file, 'UTF-8');
-  } else { toast('⚠ .md, .txt ou .pdf attendu'); }
+  } else { showErrorWarn('Format non reconnu', 'Le fichier "<b>' + file.name + '</b>" ne peut pas être importé directement.<br><br><b>Formats acceptés :</b><br>• <b>.md / .txt</b> — texte Markdown ou brut<br>• <b>.pdf</b> — extraction de texte (ou OCR si scanné)<br>• <b>.jpg / .png / .gif…</b> — reconnaissance de texte par OCR<br>• <b>.html / .htm</b> — conversion en Markdown'); }
 });
 
 /* ══════════════════════════════════════════════
@@ -753,7 +753,7 @@ async function convertPDF(file) {
     setEditorContent(`---\ntitle: ${base}\nsource: PDF converti le ${date}\npages: ${N}\n---\n\n`
       + pages.join('\n').replace(/\n{3,}/g,'\n\n').trim());
     render(); hideProgress(); toast(`✓ PDF converti — ${N} page${N>1?'s':''}`);
-  } catch(err) { hideProgress(); toast('⚠ Erreur PDF : ' + err.message); }
+  } catch(err) { hideProgress(); showErrorWarn('Erreur lors de l\'import PDF', 'Le fichier PDF n\'a pas pu être lu : <b>' + err.message + '</b><br><br><b>Causes possibles :</b><br>• PDF protégé par mot de passe<br>• Fichier corrompu ou incomplet<br>• Format PDF non standard<br><br><b>Alternatives :</b><br>• Ouvre le PDF dans ton navigateur et fais <b>Ctrl+S → HTML</b><br>• Fais une capture d\'écran et importe l\'<b>image</b> (OCR)'); }
 }
 
 /* PDF scanné : rendu canvas page par page + OCR Tesseract */
@@ -816,7 +816,7 @@ function convertHTMLFile(file) {
       render();
       toast('✓ HTML importé — ' + file.name);
     } catch(err) {
-      toast('⚠ Erreur HTML : ' + err.message);
+      showErrorWarn('Erreur lors de l\'import HTML', 'Le fichier HTML n\'a pas pu être converti : <b>' + err.message + '</b><br><br><b>Causes possibles :</b><br>• Fichier HTML mal formé ou tronqué<br>• Encodage de caractères inhabituel<br><br>Essaie de ré-enregistrer la page depuis le navigateur (<b>Ctrl+S → Page web complète</b>) et réimporte.');
     }
   };
   r.readAsText(file, 'UTF-8');
@@ -846,7 +846,7 @@ async function convertImage(file) {
       }
     });
 
-    if (!text || !text.trim()) throw new Error('Aucun texte détecté dans l\'image');
+    if (!text || !text.trim()) throw new Error('AUCUN_TEXTE');
 
     // Nettoyer le texte brut OCR
     const body = text
@@ -863,7 +863,11 @@ async function convertImage(file) {
     toast('✓ OCR terminé — ' + file.name);
   } catch (err) {
     hideProgress();
-    toast('⚠ OCR échoué : ' + err.message);
+    if (err.message === 'AUCUN_TEXTE') {
+      showErrorWarn('Aucun texte détecté', 'L\'OCR n\'a trouvé aucun texte lisible dans cette image.<br><br><b>Causes possibles :</b><br>• Image trop floue ou basse résolution<br>• Texte manuscrit (non supporté)<br>• Image purement graphique sans texte<br><br><b>Conseils :</b><br>• Utilise une image plus nette (300 dpi minimum)<br>• Zoome sur la zone de texte avant de faire une capture<br>• Les langues supportées sont le <b>français</b> et l\'<b>anglais</b>');
+    } else {
+      showErrorWarn('OCR échoué', 'La reconnaissance de texte a échoué : <b>' + err.message + '</b><br><br><b>Causes possibles :</b><br>• Format d\'image non supporté<br>• Fichier image corrompu<br>• Mémoire insuffisante pour les grandes images<br><br>Essaie de convertir l\'image en <b>.png</b> ou de réduire sa taille avant de l\'importer.');
+    }
   }
 }
 
@@ -892,13 +896,13 @@ async function fetchURL() {
   const btn   = document.getElementById('url-btn');
   let url     = input.value.trim();
 
-  if (!url) { toast('⚠ Colle une URL d\'abord'); input.focus(); return; }
+  if (!url) { toast('⚠ Colle une URL puis appuie sur Entrée'); input.focus(); return; }
 
   // Ajouter https:// si manquant
   if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
 
   // Valider le format URL
-  try { new URL(url); } catch { toast('⚠ URL invalide'); return; }
+  try { new URL(url); } catch { toast('⚠ URL invalide — exemple : https://exemple.com/page'); return; }
 
   btn.disabled = true;
   showProgress('🌐 Import URL → Markdown', url, true);
@@ -981,12 +985,14 @@ async function fetchURL() {
 
   } catch(err) {
     hideProgress();
-    let msg = err.message;
-    if (msg.includes('timeout') || msg.includes('abort')) msg = 'Délai dépassé — page trop lourde ou hors ligne';
-    if (msg.includes('Failed to fetch')) msg = 'Connexion impossible — vérifie internet';
-    toast('⚠ ' + msg);
-    // Proposer l'import HTML quand les proxies échouent
-    showProxyFailWarn();
+    const msg = err.message;
+    if (msg.includes('timeout') || msg.includes('abort') || msg.includes('Délai')) {
+      showErrorWarn('Délai dépassé', 'La page a mis trop de temps à répondre via les proxies.<br><br><b>Causes possibles :</b><br>• Site lent ou momentanément indisponible<br>• Page très lourde (vidéos, ressources massives)<br>• Connexion réseau instable<br><br><b>Alternatives :</b><br>• <b>Import HTML</b> — <b>Ctrl+S → "Page web complète"</b> dans le navigateur, puis glisse le .html ici<br>• <b>Import PDF</b> — <b>Ctrl+P → Enregistrer en PDF</b>, puis importe avec <b>PDF</b>');
+    } else if (msg.includes('Failed to fetch') || msg.includes('Connexion')) {
+      showErrorWarn('Connexion impossible', 'L\'application n\'a pas pu joindre les proxies CORS.<br><br><b>Causes possibles :</b><br>• Pas de connexion internet<br>• Proxy bloqué par un pare-feu ou un VPN<br><br>Vérifie ta connexion et réessaie, ou importe la page manuellement (<b>Ctrl+S → HTML</b> depuis le navigateur).');
+    } else {
+      showProxyFailWarn();
+    }
   } finally {
     btn.disabled = false;
   }
@@ -1386,31 +1392,33 @@ function closeQualityWarn() {
 }
 
 function showProxyFailWarn() {
-  document.getElementById('quality-warn-title').textContent = '⚠ Import par URL impossible';
-  document.getElementById('quality-warn-body').innerHTML =
-    'Tous les proxies ont échoué — la page est peut-être hors ligne, ' +
-    'trop lourde, ou nécessite JavaScript pour s\'afficher.<br><br>' +
-    '<b>Alternatives :</b><br>' +
-    '• Ouvre la page dans ton navigateur, fais <b>Ctrl+S → "Page web complète (HTML)"</b>, puis glisse le fichier ici ou clique <b>🌐 HTML</b><br>' +
-    '• Exporte la page en PDF depuis le navigateur (<b>Ctrl+P → Enregistrer en PDF</b>), puis importe avec <b>PDF</b>';
-  const panel = document.getElementById('quality-warn');
-  panel.classList.add('show');
-  setTimeout(() => panel.classList.remove('show'), 25000);
+  showErrorWarn('⚠ Import par URL impossible',
+    'Tous les proxies ont échoué. La page est peut-être protégée, hors ligne, ou nécessite JavaScript pour s\'afficher.<br><br>' +
+    '<b>Alternatives — du plus complet au moins complet :</b><br>' +
+    '• <b>Import HTML ✓✓✓</b> — ouvre la page, fais <b>Ctrl+S → "Page web complète"</b>, glisse le .html ici. Conserve les <b>tableaux, la mise en forme et les liens</b>.<br>' +
+    '• <b>Import PDF ✓✓</b> — fais <b>Ctrl+P → Enregistrer en PDF</b>. Conserve le texte et la structure, mais les <b>tableaux complexes peuvent être perdus</b>.<br>' +
+    '• <b>Copier-coller ✓</b> — sélectionne et colle le texte dans l\'éditeur. Rapide, mais <b>tableaux, images et liens sont perdus</b>.'
+  );
 }
 
 function showBlockedWarn(url) {
-  document.getElementById('quality-warn-title').textContent = '🚫 Accès refusé par le site';
   const domain = (() => { try { return new URL(url).hostname; } catch { return 'ce site'; } })();
-  document.getElementById('quality-warn-body').innerHTML =
-    '<b>' + domain + '</b> bloque les accès automatisés (protection anti-bot, Cloudflare, Akamai…). ' +
-    'Le proxy a bien contacté le serveur, mais celui-ci a refusé de livrer la page.<br><br>' +
-    '<b>Solutions :</b><br>' +
-    '• <b>Import HTML</b> — ouvre la page dans ton navigateur, fais <b>Ctrl+S → "Page web complète"</b>, puis glisse le fichier .html ici ou clique <b>🌐 HTML</b><br>' +
-    '• <b>Import PDF</b> — fais <b>Ctrl+P → Enregistrer en PDF</b> dans le navigateur, puis importe avec <b>PDF</b><br>' +
-    '• <b>Copier-coller</b> — sélectionne le texte de la page et colle-le directement dans l\'éditeur';
+  showErrorWarn('🚫 Accès refusé par ' + domain,
+    domain + ' bloque les accès automatisés (Cloudflare, Akamai, anti-bot…). Le proxy a bien contacté le serveur, mais celui-ci a refusé de livrer la page.<br><br>' +
+    '<b>Alternatives — du plus complet au moins complet :</b><br>' +
+    '• <b>Import HTML ✓✓✓</b> — ouvre la page, fais <b>Ctrl+S → "Page web complète"</b>, glisse le .html ici. Conserve les <b>tableaux, la mise en forme et les liens</b>.<br>' +
+    '• <b>Import PDF ✓✓</b> — fais <b>Ctrl+P → Enregistrer en PDF</b>. Conserve le texte et la structure, mais les <b>tableaux complexes peuvent être perdus</b>.<br>' +
+    '• <b>Copier-coller ✓</b> — sélectionne et colle le texte dans l\'éditeur. Rapide, mais <b>tableaux, images et liens sont perdus</b>.'
+  );
+}
+
+function showErrorWarn(title, body) {
+  document.getElementById('quality-warn-title').textContent = title;
+  document.getElementById('quality-warn-body').innerHTML = body;
   const panel = document.getElementById('quality-warn');
   panel.classList.add('show');
-  setTimeout(() => panel.classList.remove('show'), 25000);
+  clearTimeout(panel._autoHide);
+  panel._autoHide = setTimeout(() => panel.classList.remove('show'), 25000);
 }
 
 function checkConversionQuality(originalHtml, markdownResult) {
@@ -1438,15 +1446,12 @@ function checkConversionQuality(originalHtml, markdownResult) {
 
   if (!issues.length) return;
 
-  document.getElementById('quality-warn-title').textContent = '⚠ Conversion incomplète';
-  const body = document.getElementById('quality-warn-body');
-  body.innerHTML = issues.map(i => `• ${i}`).join('<br>') +
-    '<br><br>Pour un résultat complet, enregistre la page depuis ton navigateur (<b>Ctrl+S → HTML</b>) puis importe le fichier.';
-
-  const panel = document.getElementById('quality-warn');
-  panel.classList.add('show');
-  // Auto-fermeture après 18 secondes si non interagi
-  setTimeout(() => panel.classList.remove('show'), 18000);
+  showErrorWarn('⚠ Conversion incomplète',
+    issues.map(i => '• ' + i).join('<br>') +
+    '<br><br><b>Pour un résultat complet :</b><br>' +
+    '• <b>Import HTML ✓✓✓</b> — <b>Ctrl+S → "Page web complète"</b> dans le navigateur, conserve les <b>tableaux, la mise en forme et les liens</b><br>' +
+    '• <b>Import PDF ✓✓</b> — <b>Ctrl+P → Enregistrer en PDF</b>, mais les <b>tableaux complexes peuvent être perdus</b>'
+  );
 }
 
 /* ══════════════════════════════════════════════
