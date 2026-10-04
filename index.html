@@ -413,7 +413,7 @@ header {
   <span id="sb-file">Sans titre.md</span>
   <span style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span style="color:var(--border)">|</span>
-  <span>v1.5.0 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">04/10/2026</span></span>
+  <span>v1.5.1 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">04/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -423,7 +423,7 @@ header {
 </div>
 <div class="toast" id="toast"></div>
 <div class="quality-warn" id="quality-warn">
-  <div class="quality-warn-title">⚠ Conversion incomplète</div>
+  <div class="quality-warn-title" id="quality-warn-title">⚠ Conversion incomplète</div>
   <div class="quality-warn-body" id="quality-warn-body"></div>
   <div class="quality-warn-actions">
     <button class="quality-warn-btn qw-primary" onclick="importHTML(); closeQualityWarn()">🌐 Importer le HTML</button>
@@ -945,6 +945,20 @@ async function fetchURL() {
 
     if (!html) throw new Error('Tous les proxies ont échoué — ' + lastErr);
 
+    // Détecter un blocage anti-bot (Access Denied, Cloudflare, Captcha…)
+    const lc = html.toLowerCase();
+    const isBlocked =
+      (lc.includes('access denied') && lc.includes('permission')) ||
+      lc.includes('error.edgesuite.net') ||
+      lc.includes('checking your browser') ||
+      (lc.includes('cloudflare') && lc.includes('ray id')) ||
+      (lc.includes('captcha') && html.length < 8000);
+    if (isBlocked) {
+      hideProgress();
+      showBlockedWarn(url);
+      return;
+    }
+
     setProgress(70, 'Page récupérée, conversion…');
     const md = htmlToMarkdown(html, url);
     setProgress(100, 'Terminé !');
@@ -1372,15 +1386,31 @@ function closeQualityWarn() {
 }
 
 function showProxyFailWarn() {
+  document.getElementById('quality-warn-title').textContent = '⚠ Import par URL impossible';
   document.getElementById('quality-warn-body').innerHTML =
-    'La page n\'a pas pu être récupérée via les proxies CORS ' +
-    '(site bloquant, rendu JavaScript, ou connexion lente).<br><br>' +
-    'Pour importer cette page : ouvre-la dans ton navigateur, ' +
-    'fais <b>Ctrl+S → "Page web, fichier HTML unique"</b>, ' +
-    'puis glisse le fichier ici ou clique <b>🌐 HTML</b>.';
+    'Tous les proxies ont échoué — la page est peut-être hors ligne, ' +
+    'trop lourde, ou nécessite JavaScript pour s\'afficher.<br><br>' +
+    '<b>Alternatives :</b><br>' +
+    '• Ouvre la page dans ton navigateur, fais <b>Ctrl+S → "Page web complète (HTML)"</b>, puis glisse le fichier ici ou clique <b>🌐 HTML</b><br>' +
+    '• Exporte la page en PDF depuis le navigateur (<b>Ctrl+P → Enregistrer en PDF</b>), puis importe avec <b>PDF</b>';
   const panel = document.getElementById('quality-warn');
   panel.classList.add('show');
-  setTimeout(() => panel.classList.remove('show'), 18000);
+  setTimeout(() => panel.classList.remove('show'), 25000);
+}
+
+function showBlockedWarn(url) {
+  document.getElementById('quality-warn-title').textContent = '🚫 Accès refusé par le site';
+  const domain = (() => { try { return new URL(url).hostname; } catch { return 'ce site'; } })();
+  document.getElementById('quality-warn-body').innerHTML =
+    '<b>' + domain + '</b> bloque les accès automatisés (protection anti-bot, Cloudflare, Akamai…). ' +
+    'Le proxy a bien contacté le serveur, mais celui-ci a refusé de livrer la page.<br><br>' +
+    '<b>Solutions :</b><br>' +
+    '• <b>Import HTML</b> — ouvre la page dans ton navigateur, fais <b>Ctrl+S → "Page web complète"</b>, puis glisse le fichier .html ici ou clique <b>🌐 HTML</b><br>' +
+    '• <b>Import PDF</b> — fais <b>Ctrl+P → Enregistrer en PDF</b> dans le navigateur, puis importe avec <b>PDF</b><br>' +
+    '• <b>Copier-coller</b> — sélectionne le texte de la page et colle-le directement dans l\'éditeur';
+  const panel = document.getElementById('quality-warn');
+  panel.classList.add('show');
+  setTimeout(() => panel.classList.remove('show'), 25000);
 }
 
 function checkConversionQuality(originalHtml, markdownResult) {
@@ -1408,6 +1438,7 @@ function checkConversionQuality(originalHtml, markdownResult) {
 
   if (!issues.length) return;
 
+  document.getElementById('quality-warn-title').textContent = '⚠ Conversion incomplète';
   const body = document.getElementById('quality-warn-body');
   body.innerHTML = issues.map(i => `• ${i}`).join('<br>') +
     '<br><br>Pour un résultat complet, enregistre la page depuis ton navigateur (<b>Ctrl+S → HTML</b>) puis importe le fichier.';
