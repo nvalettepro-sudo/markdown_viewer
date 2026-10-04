@@ -971,6 +971,8 @@ async function fetchURL() {
     if (msg.includes('timeout') || msg.includes('abort')) msg = 'Délai dépassé — page trop lourde ou hors ligne';
     if (msg.includes('Failed to fetch')) msg = 'Connexion impossible — vérifie internet';
     toast('⚠ ' + msg);
+    // Proposer l'import HTML quand les proxies échouent
+    showProxyFailWarn();
   } finally {
     btn.disabled = false;
   }
@@ -1343,6 +1345,18 @@ function toast(msg) {
 ══════════════════════════════════════════════ */
 function closeQualityWarn() {
   document.getElementById('quality-warn').classList.remove('show');
+}
+
+function showProxyFailWarn() {
+  document.getElementById('quality-warn-body').innerHTML =
+    'La page n\'a pas pu être récupérée via les proxies CORS ' +
+    '(site bloquant, rendu JavaScript, ou connexion lente).<br><br>' +
+    'Pour importer cette page : ouvre-la dans ton navigateur, ' +
+    'fais <b>Ctrl+S → "Page web, fichier HTML unique"</b>, ' +
+    'puis glisse le fichier ici ou clique <b>🌐 HTML</b>.';
+  const panel = document.getElementById('quality-warn');
+  panel.classList.add('show');
+  setTimeout(() => panel.classList.remove('show'), 18000);
 }
 
 function checkConversionQuality(originalHtml, markdownResult) {
