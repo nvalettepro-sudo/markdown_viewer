@@ -1213,6 +1213,30 @@ function htmlToMarkdown(html, sourceUrl) {
       return '\n\n' + toMDRow(rows[0]) + '\n' + sep + '\n' + rows.slice(1).map(toMDRow).join('\n') + '\n\n';
     }
 
+    // Tableaux div-based (Steam bb_table, et autres systèmes similaires)
+    const cls = node.className || '';
+    const isBBTable     = cls === 'bb_table';
+    const isBBTableRow  = cls === 'bb_table_tr';
+    if (isBBTable) {
+      const rows = [...node.querySelectorAll(':scope > .bb_table_tr')];
+      if (!rows.length) return children();
+      const getCells = r => [...r.querySelectorAll(':scope > .bb_table_th, :scope > .bb_table_td')];
+      const colCount = Math.max(...rows.map(r => getCells(r).length), 1);
+      const toMDRow = r => {
+        const cells = getCells(r);
+        const parts = Array.from({length: colCount}, (_, i) =>
+          (cells[i]?.textContent || '').replace(/\s+/g,' ').trim().replace(/\|/g,'\\|')
+        );
+        return '| ' + parts.join(' | ') + ' |';
+      };
+      const sep = '| ' + Array(colCount).fill('---').join(' | ') + ' |';
+      const headerMD = toMDRow(rows[0]);
+      const bodyMD   = rows.slice(1).map(toMDRow).join('\n');
+      return '\n\n' + headerMD + '\n' + sep + (bodyMD ? '\n' + bodyMD : '') + '\n\n';
+    }
+    // Ignorer les lignes/cellules bb_table (déjà traitées par le parent bb_table)
+    if (/bb_table_t[rhd]/.test(cls)) return children();
+
     // Div / section / article → récursion
     if (['div','section','article','main','figure','figcaption','span'].includes(tag)) {
       return children();
