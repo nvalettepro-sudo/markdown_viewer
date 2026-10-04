@@ -908,6 +908,50 @@ async function fetchURL() {
   }
 }
 
+/* ── Tableaux ASCII → Markdown ──
+   Détecte les tableaux +---+---+ ou à séparateur =====
+   et les convertit en tableaux Markdown | col | col |  */
+function convertAsciiTables(text) {
+  // Pattern : lignes qui commencent et finissent par | (tableaux déjà quasi-MD)
+  // ou lignes +---+---+ (ASCII box)
+  const lines = text.split('\n');
+  const result = [];
+  let i = 0;
+
+  while (i < lines.length) {
+    const line = lines[i];
+
+    // Détecte une ligne séparateur ASCII (+---+ ou +===+)
+    if (/^\+[-=+]+\+/.test(line.trim())) {
+      // Collecte le bloc de tableau ASCII
+      const block = [];
+      while (i < lines.length && (lines[i].trim().startsWith('|') || lines[i].trim().startsWith('+'))) {
+        block.push(lines[i]);
+        i++;
+      }
+      // Parse le bloc
+      const dataRows = block.filter(l => l.trim().startsWith('|'));
+      if (dataRows.length >= 1) {
+        const parseCols = l => l.trim().replace(/^\||\|$/g,'').split('|').map(c => c.trim());
+        const mdRows = dataRows.map(parseCols);
+        const colCount = Math.max(...mdRows.map(r => r.length));
+        const pad = r => { while(r.length < colCount) r.push(''); return r.slice(0, colCount); };
+        result.push('| ' + pad(mdRows[0]).join(' | ') + ' |');
+        result.push('| ' + Array(colCount).fill('---').join(' | ') + ' |');
+        mdRows.slice(1).forEach(r => result.push('| ' + pad(r).join(' | ') + ' |'));
+        result.push('');
+      } else {
+        block.forEach(l => result.push(l));
+      }
+      continue;
+    }
+
+    result.push(line);
+    i++;
+  }
+  return result.join('\n');
+}
+
 /* ── Convertisseur HTML → Markdown ── */
 function htmlToMarkdown(html, sourceUrl) {
   // Parser le HTML dans un DOM virtuel (ne s'affiche pas)
@@ -1040,17 +1084,63 @@ function htmlToMarkdown(html, sourceUrl) {
 
     // Tableaux
     if (tag === 'table') {
-      const rows = [...node.querySelectorAll('tr')];
-      if (!rows.length) return '';
-      const toMDRow = (tr) => '| ' + [...tr.querySelectorAll('th,td')]
-        .map(c => c.textContent.trim().replace(/\|/g,'\\|').replace(/\n/g,' '))
-        .join(' | ') + ' |';
-      const header = rows[0];
-      const cells  = [...header.querySelectorAll('th,td')];
-      const sep    = '|' + cells.map(() => '---|').join('');
-      const headerMD = toMDRow(header);
-      const bodyMD   = rows.slice(1).map(toMDRow).join('\n');
-      return '\n\n' + headerMD + '\n' + sep + '\n' + bodyMD + '\n\n';
+      // Récupérer uniquement les <tr> directs de thead/tbody/tfoot (pas les nested tables)
+      const theadRows = [...node.querySelectorAll(':scope > thead > tr')];
+      const tbodyRows = [...node.querySelectorAll(':scope > tbody > tr, :scope > tfoot > tr')];
+      const directRows = [...node.querySelectorAll(':scope > tr')];
+      const allRows = theadRows.length
+        ? [...theadRows, ...tbodyRows]
+        : directRows.length ? directRows : [...node.querySelectorAll('tr')];
+      if (!allRows.length) return '';
+
+      // Cellules directes seulement (évite de piocher dans les tables imbriquées)
+      const getCells = tr => [...tr.querySelectorAll(':scope > th, :scope > td')];
+
+      // Rang d'en-tête = première ligne du thead si présent, sinon première tr
+      const headerRow  = theadRows.length ? theadRows[0] : allRows[0];
+      const bodyRows   = theadRows.length
+        ? [...theadRows.slice(1), ...tbodyRows]
+        : allRows.slice(1);
+
+      const colCount = getCells(headerRow).length || 1;
+      if (colCount === 0) return children();
+
+      const cellText = c => c.textContent.replace(/\s+/g,' ').trim()
+        .replace(/\|/g,'\\|');
+
+      const toMDRow = tr => {
+        const cells = getCells(tr);
+        // Gérer colspan approximativement en répétant la valeur
+        const parts = [];
+        cells.forEach(c => {
+          const span = parseInt(c.getAttribute('colspan') || '1', 10);
+          const txt  = cellText(c);
+          for (let i = 0; i < span; i++) parts.push(i === 0 ? txt : '');
+        });
+        // Aligner sur colCount
+        while (parts.length < colCount) parts.push('');
+        return '| ' + parts.slice(0, colCount).join(' | ') + ' |';
+      };
+
+      const sep = '| ' + Array(colCount).fill('---').join(' | ') + ' |';
+      const headerMD = toMDRow(headerRow);
+      const bodyMD   = bodyRows.map(toMDRow).join('\n');
+      return '\n\n' + headerMD + '\n' + sep + (bodyMD ? '\n' + bodyMD : '') + '\n\n';
+    }
+
+    // Tableaux rôle ARIA (div grid)
+    if (node.getAttribute('role') === 'table' || node.getAttribute('role') === 'grid') {
+      const rows = [...node.querySelectorAll('[role="row"]')];
+      if (!rows.length) return children();
+      const getCells = r => [...r.querySelectorAll('[role="cell"],[role="columnheader"],[role="gridcell"]')];
+      const colCount = Math.max(...rows.map(r => getCells(r).length), 1);
+      const toMDRow  = r => {
+        const cells = getCells(r);
+        while (cells.length < colCount) cells.push({ textContent: '' });
+        return '| ' + cells.slice(0, colCount).map(c => c.textContent.replace(/\s+/g,' ').trim().replace(/\|/g,'\\|')).join(' | ') + ' |';
+      };
+      const sep = '| ' + Array(colCount).fill('---').join(' | ') + ' |';
+      return '\n\n' + toMDRow(rows[0]) + '\n' + sep + '\n' + rows.slice(1).map(toMDRow).join('\n') + '\n\n';
     }
 
     // Div / section / article → récursion
@@ -1070,10 +1160,13 @@ function htmlToMarkdown(html, sourceUrl) {
 
   // ── Nettoyage ──
   body = body
-    .replace(/\n{4,}/g, '\n\n\n')      // max 3 sauts consécutifs
-    .replace(/[ \t]+\n/g, '\n')        // espaces en fin de ligne
-    .replace(/\n\n([-*] )/g, '\n$1')   // listes collées
+    .replace(/\n{4,}/g, '\n\n\n')
+    .replace(/[ \t]+\n/g, '\n')
+    .replace(/\n\n([-*] )/g, '\n$1')
     .trim();
+
+  // ── Tableaux ASCII → Markdown (pour tableaux +---+ ou séparateurs = ) ──
+  body = convertAsciiTables(body);
 
   // ── Frontmatter ──
   const fm = [
