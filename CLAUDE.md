@@ -41,6 +41,20 @@ The app is a split-pane Markdown editor with a live preview. All logic is in a s
 - `pdf.js` 3.11.174 — PDF text extraction (with web worker)
 - Google Fonts — JetBrains Mono + Crimson Pro
 
+## Versioning
+
+The version number is displayed in the status bar (bottom-right of the app). It **must be updated with every code change**, without being asked:
+
+- Bug fix → increment patch (e.g. v1.5.0 → v1.5.1)
+- New feature → increment minor (e.g. v1.5.0 → v1.6.0)
+
+The version string is in `index.html` near the bottom, inside a `<span>` in the status bar:
+```html
+<span>v1.5.0 <span ...>·</span> <span ...>04/10/2026</span></span>
+```
+
+Update both the version number and the date (DD/MM/YYYY) on every commit.
+
 ## Constraints
 
 - **No frameworks, no npm** — keep it a single deployable HTML file.
