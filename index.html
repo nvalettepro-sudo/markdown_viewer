@@ -300,6 +300,33 @@ header {
 .toast { position: fixed; bottom: 36px; right: 20px; background: var(--accent); color: #0e0f14; font-family: var(--font-mono); font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 3px; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 200; }
 .toast.show { opacity: 1; transform: translateY(0); }
 
+/* ── Panneau d'avertissement qualité ── */
+.quality-warn {
+  position: fixed; bottom: 36px; left: 20px; z-index: 210;
+  background: var(--surface); border: 1px solid #e8834b;
+  border-left: 3px solid #e8834b;
+  border-radius: 5px; padding: 12px 14px; max-width: 320px;
+  font-family: var(--font-mono); font-size: 11px; color: var(--text);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  opacity: 0; transform: translateY(10px);
+  transition: all 0.25s; pointer-events: none;
+}
+.quality-warn.show { opacity: 1; transform: translateY(0); pointer-events: all; }
+.quality-warn-title { color: #e8834b; font-weight: 600; font-size: 11px; margin-bottom: 6px; letter-spacing: 0.05em; }
+.quality-warn-body { color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
+.quality-warn-body b { color: var(--text); }
+.quality-warn-actions { display: flex; gap: 6px; }
+.quality-warn-btn {
+  font-family: var(--font-mono); font-size: 10px; font-weight: 600;
+  padding: 4px 10px; border-radius: 3px; cursor: pointer;
+  letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid;
+  transition: all 0.15s;
+}
+.qw-primary { border-color: #e8834b; color: #e8834b; background: transparent; }
+.qw-primary:hover { background: #e8834b; color: #0e0f14; }
+.qw-close { border-color: var(--border); color: var(--muted); background: transparent; }
+.qw-close:hover { border-color: var(--muted); color: var(--text); }
+
 /* ── Overlay progression (PDF + URL) ── */
 .progress-overlay { display: none; position: fixed; inset: 0; background: rgba(14,15,20,0.85); z-index: 300; align-items: center; justify-content: center; }
 .progress-overlay.active { display: flex; }
@@ -395,6 +422,14 @@ header {
   <small>.md · .txt · .pdf · .jpg · .png · .html</small>
 </div>
 <div class="toast" id="toast"></div>
+<div class="quality-warn" id="quality-warn">
+  <div class="quality-warn-title">⚠ Conversion incomplète</div>
+  <div class="quality-warn-body" id="quality-warn-body"></div>
+  <div class="quality-warn-actions">
+    <button class="quality-warn-btn qw-primary" onclick="importHTML(); closeQualityWarn()">🌐 Importer le HTML</button>
+    <button class="quality-warn-btn qw-close" onclick="closeQualityWarn()">Ignorer</button>
+  </div>
+</div>
 <a id="dl-link" style="display:none"></a>
 <input type="file" id="file-input" accept=".md,.markdown,.txt" style="display:none" onchange="handleFileInput(this)">
 <input type="file" id="pdf-input" accept=".pdf" style="display:none" onchange="handlePDFInput(this)">
@@ -912,8 +947,10 @@ async function fetchURL() {
 
     setProgress(70, 'Page récupérée, conversion…');
     const md = htmlToMarkdown(html, url);
-
     setProgress(100, 'Terminé !');
+
+    // Vérification qualité non bloquante
+    checkConversionQuality(html, md);
 
     // Nom de fichier depuis le domaine
     const domain = new URL(url).hostname.replace('www.', '');
@@ -1299,6 +1336,48 @@ function toast(msg) {
   t.textContent = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2600);
+}
+
+/* ══════════════════════════════════════════════
+   Avertissement qualité conversion URL
+══════════════════════════════════════════════ */
+function closeQualityWarn() {
+  document.getElementById('quality-warn').classList.remove('show');
+}
+
+function checkConversionQuality(originalHtml, markdownResult) {
+  const issues = [];
+
+  // 1. Tableaux présents dans le HTML mais absents du Markdown
+  const htmlTableCount = (originalHtml.match(/<table[\s>]/gi) || []).length;
+  const mdTableCount   = (markdownResult.match(/^\|.+\|$/m) ? 1 : 0);
+  if (htmlTableCount > 0 && mdTableCount === 0) {
+    issues.push(`<b>${htmlTableCount} tableau${htmlTableCount > 1 ? 'x' : ''}</b> détecté${htmlTableCount > 1 ? 's' : ''} dans la page mais absent${htmlTableCount > 1 ? 's' : ''} du résultat`);
+  }
+
+  // 2. Contenu très court malgré une page volumineuse
+  const htmlTextLen = originalHtml.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim().length;
+  const mdLen = markdownResult.replace(/^---[\s\S]*?---/, '').trim().length;
+  if (htmlTextLen > 3000 && mdLen < htmlTextLen * 0.15) {
+    issues.push(`Seulement <b>${Math.round(mdLen / htmlTextLen * 100)}%</b> du texte récupéré (page probablement rendue par JavaScript)`);
+  }
+
+  // 3. Scripts très nombreux = page JS-heavy
+  const scriptCount = (originalHtml.match(/<script[\s>]/gi) || []).length;
+  if (scriptCount > 15 && mdLen < 500) {
+    issues.push(`Page à fort rendu JavaScript (<b>${scriptCount} scripts</b>) — le contenu dynamique est ignoré par les proxies`);
+  }
+
+  if (!issues.length) return;
+
+  const body = document.getElementById('quality-warn-body');
+  body.innerHTML = issues.map(i => `• ${i}`).join('<br>') +
+    '<br><br>Pour un résultat complet, enregistre la page depuis ton navigateur (<b>Ctrl+S → HTML</b>) puis importe le fichier.';
+
+  const panel = document.getElementById('quality-warn');
+  panel.classList.add('show');
+  // Auto-fermeture après 18 secondes si non interagi
+  setTimeout(() => panel.classList.remove('show'), 18000);
 }
 
 /* ══════════════════════════════════════════════
