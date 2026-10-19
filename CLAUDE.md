@@ -32,6 +32,8 @@ The app is a split-pane Markdown editor with a live preview. All logic is in a s
 | `convertPDF()` | Two-pass PDF text extraction via PDF.js: calibrate font sizes → infer heading levels → emit Markdown |
 | `fetchURL()` | CORS proxy cascade (corsproxy.io → allorigins.win × 2) with 12s timeout per proxy |
 | `htmlToMarkdown()` | DOM-based HTML-to-Markdown converter: strips nav/footer/ads, finds `<main>`/`<article>`, converts nodes recursively |
+| `mdToHTML()` / `buildTOC()` | Markdown → HTML with heading ids; replaces the `<!-- TOC -->` marker with a live table of contents built from the document's headings (H1–H4) |
+| `autoStructure()` | Heuristic heading detection on plain text, with a preview dialog (`openHeadingPreview`) before applying |
 | `exportHTML()` | Generates a self-contained standalone HTML file with inlined CSS |
 | Divider resize | Drag-to-resize the editor/preview split via `mousedown`/`mousemove`/`mouseup` |
 

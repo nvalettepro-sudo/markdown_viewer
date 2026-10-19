@@ -275,6 +275,13 @@ header {
 .md-body img { max-width: 100%; border-radius: 4px; }
 
 /* ── Frontmatter ── */
+.md-body .toc { border: 1px solid var(--border); border-left: 3px solid var(--accent); background: var(--surface); padding: 12px 20px; margin: 1.5em 0; border-radius: 4px; }
+.md-body .toc-title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
+.md-body .toc ul { margin: 0; padding-left: 1.3em; list-style: none; }
+.md-body .toc > ul { padding-left: 0; }
+.md-body .toc li { margin: 2px 0; line-height: 1.5; }
+.md-body .toc a { text-decoration: none; }
+.md-body .toc a:hover { text-decoration: underline; }
 .frontmatter-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
 .frontmatter-table th { text-align: left; padding: 8px 14px; background: var(--tag-bg); color: var(--muted); font-weight: 600; width: 130px; border-bottom: 1px solid var(--border); }
 .frontmatter-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
@@ -391,6 +398,7 @@ header {
   <button class="tbtn h-btn" onclick="insert('### ')">H3</button>
   <button class="tbtn h-btn" onclick="insert('#### ')">H4</button>
   <button class="tbtn" onclick="autoStructure()" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler." style="color:var(--accent)">⚡ Auto-titres</button>
+  <button class="tbtn" onclick="insertTOC()" title="Insérer un sommaire dynamique à la position du curseur" style="color:var(--accent)">☰ Sommaire</button>
   <div class="toolbar-sep"></div>
   <button class="tbtn" onclick="wrap('**','**')"><b>B</b></button>
   <button class="tbtn" onclick="wrap('*','*')"><i>I</i></button>
@@ -431,7 +439,7 @@ header {
   <span id="sb-file">Sans titre.md</span>
   <span style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span style="color:var(--border)">|</span>
-  <span>v1.7.0 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">19/10/2026</span></span>
+  <span>v1.8.0 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">19/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -493,6 +501,64 @@ marked.setOptions({
   },
   breaks: true, gfm: true,
 });
+
+/* ══════════════════════════════════════════════
+   Titres (ids d'ancre) + sommaire dynamique
+   Le marqueur <!-- TOC --> est remplacé à chaque rendu par un sommaire
+   généré depuis les titres réels du document (H1–H4).
+══════════════════════════════════════════════ */
+const TOC_MARKER = '<!-- TOC -->';
+const TOC_RE = /^\s*<!--\s*toc\s*-->\s*$/i;
+let headingIds = [];
+marked.use({ renderer: {
+  heading(text, level) {
+    const id = headingIds.shift();
+    return id ? `<h${level} id="${id}">${text}</h${level}>\n` : `<h${level}>${text}</h${level}>\n`;
+  }
+}});
+
+function slugify(t) {
+  return t.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '')
+    .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '') || 'section';
+}
+function escHTML(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+
+function buildTOC(entries) {
+  if (!entries.length) return '<nav class="toc"><div class="toc-title">Sommaire</div><p class="toc-empty">Aucun titre (H1–H4) dans le document.</p></nav>\n';
+  const base = Math.min(...entries.map(e => e.depth));
+  let out = '<ul>', level = base, open = false;
+  for (const e of entries) {
+    if (e.depth > level) { out += '<ul>'.repeat(e.depth - level); level = e.depth; }
+    else {
+      while (level > e.depth) { out += '</li></ul>'; level--; }
+      if (open) out += '</li>';
+    }
+    out += `<li><a href="#${e.id}">${escHTML(e.text)}</a>`;
+    open = true;
+  }
+  out += '</li>' + '</ul></li>'.repeat(level - base) + '</ul>';
+  return `<nav class="toc"><div class="toc-title">Sommaire</div>${out}</nav>\n`;
+}
+
+function mdToHTML(body) {
+  const tokens = marked.lexer(body);
+  const heads = [], seen = {}, tmp = document.createElement('div');
+  marked.walkTokens(tokens, t => {
+    if (t.type !== 'heading') return;
+    tmp.innerHTML = marked.parseInline(t.text);
+    const text = tmp.textContent.trim();
+    const base = slugify(text);
+    const n = seen[base] = (seen[base] ?? -1) + 1;
+    heads.push({ depth: t.depth, text, id: n ? base + '-' + n : base });
+  });
+  headingIds = heads.map(h => h.id);
+  const toc = buildTOC(heads.filter(h => h.depth <= 4));
+  const out = tokens.map(t => (t.type === 'html' && TOC_RE.test(t.raw)) ? { type: 'html', raw: toc, text: toc, block: true } : t);
+  out.links = tokens.links;
+  const html = marked.parser(out);
+  headingIds = [];
+  return html;
+}
 
 /* ══════════════════════════════════════════════
    State
@@ -591,7 +657,7 @@ function render() {
   clearTimeout(debounce);
   debounce = setTimeout(() => {
     const { meta, body } = parseFrontmatter(editor.value);
-    preview.innerHTML = frontmatterToHTML(meta) + marked.parse(body);
+    preview.innerHTML = frontmatterToHTML(meta) + mdToHTML(body);
     preview.querySelectorAll('pre code:not(.hljs)').forEach(el => hljs.highlightElement(el));
     updateStats();
   }, 150);
@@ -658,7 +724,7 @@ function autoStructure() {
   let inCode = false;
   for (let i = i0; i < n; i++) {
     if (/^\s*```/.test(lines[i])) { inCode = !inCode; skip[i] = true; continue; }
-    if (inCode || /^\s*\|/.test(lines[i])) skip[i] = true;
+    if (inCode || /^\s*\|/.test(lines[i]) || TOC_RE.test(lines[i])) skip[i] = true;
   }
 
   const ADMONITION = /^(note|tip|warning|important|caution|remarque|astuce|attention|avertissement)$/i;
@@ -773,6 +839,33 @@ function applyHeadingPreview() {
 }
 document.addEventListener('keydown', e => {
   if (e.key === 'Escape' && hpState) closeHeadingPreview();
+});
+/* Insère le marqueur de sommaire au curseur (un seul sommaire par document) */
+function insertTOC() {
+  const v = editor.value;
+  const m = v.split('\n').findIndex(l => TOC_RE.test(l));
+  if (m >= 0) {
+    const start = v.split('\n').slice(0, m).join('\n').length + (m ? 1 : 0);
+    editor.focus(); editor.setSelectionRange(start, start + TOC_MARKER.length);
+    toast('Un sommaire existe déjà (ligne ' + (m + 1) + ') — il se met à jour tout seul');
+    return;
+  }
+  const pos = editor.selectionStart;
+  const before = v.slice(0, pos), after = v.slice(editor.selectionEnd);
+  const pre = !before || before.endsWith('\n\n') ? '' : before.endsWith('\n') ? '\n' : '\n\n';
+  const suf = !after || after.startsWith('\n\n') ? '' : after.startsWith('\n') ? '\n' : '\n\n';
+  editor.focus();
+  document.execCommand('insertText', false, pre + TOC_MARKER + suf);
+  if (!editor.value.includes(TOC_MARKER)) editor.setRangeText(pre + TOC_MARKER + suf, pos, pos, 'end');
+  render();
+  toast('✓ Sommaire inséré — il suit automatiquement les titres du document');
+}
+preview.addEventListener('click', e => {
+  const a = e.target.closest('a[href^="#"]');
+  if (!a) return;
+  e.preventDefault();
+  const el = preview.querySelector('#' + CSS.escape(a.getAttribute('href').slice(1)));
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
 });
 function insertHR()    { const s=editor.selectionStart; editor.setRangeText('\n---\n',s,s,'end'); editor.focus(); render(); }
 function wrapLink()    { const s=editor.selectionStart,e=editor.selectionEnd; editor.setRangeText(`[${editor.value.substring(s,e)||'lien'}](https://url.com)`,s,e,'end'); editor.focus(); render(); }
@@ -1492,7 +1585,7 @@ function exportMD() {
 function exportHTML() {
   const { meta, body } = parseFrontmatter(editor.value);
   const fmHTML   = frontmatterToHTML(meta);
-  const bodyHTML = marked.parse(body);
+  const bodyHTML = mdToHTML(body);
   const title    = (meta.title || currentFile).replace(/\.[^.]+$/, '').replace(/"/g,'');
   const full = `<!DOCTYPE html>
 <html lang="fr">
@@ -1514,6 +1607,9 @@ table{width:100%;border-collapse:collapse;margin:1.2em 0}
 th,td{padding:8px 12px;border:1px solid #ddd;text-align:left}
 th{background:#f5f5f5;font-size:.85em;text-transform:uppercase;font-family:monospace}
 a{color:#2563eb}img{max-width:100%}hr{border:none;border-top:1px solid #eee;margin:2em 0}
+.toc{border:1px solid #ddd;border-left:3px solid #c4832a;background:#f9f9f7;padding:12px 20px;margin:1.5em 0;border-radius:4px}
+.toc-title{font-family:monospace;font-size:.8em;text-transform:uppercase;letter-spacing:.08em;color:#666;margin-bottom:6px}
+.toc ul{margin:0;padding-left:1.3em;list-style:none}.toc>ul{padding-left:0}.toc li{margin:2px 0;line-height:1.5}.toc a{text-decoration:none}
 .frontmatter-table th{background:#f0f0f0;width:130px;font-family:monospace}
 .tag-chip{display:inline-block;padding:2px 8px;background:#e8eaf0;border-radius:20px;font-size:11px;margin:2px 3px}
 </style>
