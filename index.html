@@ -373,6 +373,7 @@ header {
   <button class="tbtn h-btn" onclick="insert('## ')">H2</button>
   <button class="tbtn h-btn" onclick="insert('### ')">H3</button>
   <button class="tbtn h-btn" onclick="insert('#### ')">H4</button>
+  <button class="tbtn" onclick="autoStructure()" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler." style="color:var(--accent)">⚡ Auto-titres</button>
   <div class="toolbar-sep"></div>
   <button class="tbtn" onclick="wrap('**','**')"><b>B</b></button>
   <button class="tbtn" onclick="wrap('*','*')"><i>I</i></button>
@@ -413,7 +414,7 @@ header {
   <span id="sb-file">Sans titre.md</span>
   <span style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span style="color:var(--border)">|</span>
-  <span>v1.5.2 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">04/10/2026</span></span>
+  <span>v1.6.0 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">19/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -611,6 +612,90 @@ function wrap(b, a) {
 function insert(p) {
   const s = editor.selectionStart, ls = editor.value.lastIndexOf('\n', s-1) + 1;
   editor.setRangeText(p, ls, ls, 'end'); editor.focus(); render();
+}
+/* Détection automatique des titres dans un texte brut :
+   lignes courtes, isolées, sans ponctuation finale, commençant par une majuscule.
+   Niveau : 1er candidat = H1 (si aucun H1 existant) ; les autres selon le volume
+   de texte qui les suit (plus de contenu = niveau plus haut). */
+function autoStructure() {
+  const lines = editor.value.split('\n');
+  const n = lines.length;
+  const skip = new Array(n).fill(false);
+
+  // Ignorer frontmatter, blocs de code et tableaux
+  let i0 = 0;
+  if (lines[0] && lines[0].trim() === '---') {
+    for (let i = 1; i < n; i++) { if (lines[i].trim() === '---') { for (let k = 0; k <= i; k++) skip[k] = true; i0 = i + 1; break; } }
+  }
+  let inCode = false;
+  for (let i = i0; i < n; i++) {
+    if (/^\s*```/.test(lines[i])) { inCode = !inCode; skip[i] = true; continue; }
+    if (inCode || /^\s*\|/.test(lines[i])) skip[i] = true;
+  }
+
+  const ADMONITION = /^(note|tip|warning|important|caution|remarque|astuce|attention|avertissement)$/i;
+  const NUMBERED = /^\d+(\.\d+)+\.?\s+\S/;
+  const isBlank = i => i < 0 || i >= n || !lines[i].trim();
+  const isCandidate = i => {
+    if (skip[i]) return false;
+    const t = lines[i].trim();
+    if (!t || t.length > 60) return false;
+    if (/^#{1,6}\s/.test(t) || /^([-*+>]|\d+[.)])\s/.test(t) || /^[-=_*]{3,}$/.test(t)) return false;
+    if (/[.,;:!]$/.test(t) || /^[(\[{]/.test(t)) return false;
+    if (!/^[A-ZÀ-ÖØ-Þ"«]/.test(t) && !NUMBERED.test(t)) return false;
+    if (/\([^)]*[.,][^)]*\)/.test(t) || ADMONITION.test(t)) return false;
+    return isBlank(i - 1) || isBlank(i + 1);
+  };
+
+  let cands = [];
+  for (let i = 0; i < n; i++) if (isCandidate(i)) cands.push(i);
+
+  // Une suite de 3+ candidats sans texte entre eux ressemble à une liste : on ne garde que le premier
+  const kept = [];
+  for (let a = 0; a < cands.length;) {
+    let b = a;
+    while (b + 1 < cands.length && lines.slice(cands[b] + 1, cands[b + 1]).every(l => !l.trim())) b++;
+    if (b - a + 1 >= 3) kept.push(cands[a]); else for (let k = a; k <= b; k++) kept.push(cands[k]);
+    a = b + 1;
+  }
+  cands = kept;
+
+  if (!cands.length) {
+    showErrorWarn('Aucun titre détecté',
+      'Aucune ligne ne ressemble à un titre dans ce texte.<br><br><b>Un titre est reconnu s\'il est :</b><br>• court (60 caractères max)<br>• isolé par une ligne vide<br>• sans ponctuation finale (. , ; : !)<br>• commence par une majuscule<br><br>Les lignes déjà titrées (#), listes, tableaux et blocs de code sont ignorés. Tu peux aussi poser les titres à la main avec les boutons <b>H1–H4</b>.');
+    return;
+  }
+
+  const hasH1 = lines.some((l, i) => !skip[i] && /^#\s/.test(l));
+  const firstBody = lines.findIndex((l, i) => !skip[i] && l.trim());
+  const titleIdx = (!hasH1 && cands[0] === firstBody) ? cands[0] : -1;
+
+  // Volume de texte qui suit chaque candidat jusqu'au suivant
+  const numLevel = i => { const m = lines[i].trim().match(/^(\d+(?:\.\d+)+)/); return m ? Math.min(m[1].split('.').length + 1, 4) : 0; };
+  const rest = cands.filter(i => i !== titleIdx && !numLevel(i));
+  const density = rest.map(i => {
+    const next = cands.find(c => c > i);
+    return lines.slice(i + 1, next === undefined ? n : next).filter(l => l.trim()).length;
+  });
+  const sorted = [...density].sort((x, y) => y - x);
+  const hi = sorted[Math.floor(sorted.length / 3)] ?? 0;
+  const mid = sorted[Math.floor(sorted.length * 2 / 3)] ?? 0;
+  const levelOf = d => rest.length <= 3 ? 2 : d > hi ? 2 : d > mid ? 3 : 4;
+
+  const levels = new Map();
+  if (titleIdx >= 0) levels.set(titleIdx, 1);
+  cands.forEach(i => { if (numLevel(i)) levels.set(i, numLevel(i)); });
+  rest.forEach((i, k) => levels.set(i, levelOf(density[k])));
+  // Un titre directement suivi d'un autre titre est son parent : un niveau au-dessus
+  for (let k = rest.length - 2; k >= 0; k--) {
+    if (density[k] === 0) levels.set(rest[k], Math.max(2, Math.min(levels.get(rest[k]), levels.get(rest[k + 1]) - 1)));
+  }
+
+  const out = lines.map((l, i) => levels.has(i) ? '#'.repeat(levels.get(i)) + ' ' + l.trim() : l);
+  setEditorContent(out.join('\n'));
+  render();
+  const c = levels.size;
+  toast(`✓ ${c} titre${c > 1 ? 's' : ''} détecté${c > 1 ? 's' : ''} — Ctrl+Z pour annuler`);
 }
 function insertHR()    { const s=editor.selectionStart; editor.setRangeText('\n---\n',s,s,'end'); editor.focus(); render(); }
 function wrapLink()    { const s=editor.selectionStart,e=editor.selectionEnd; editor.setRangeText(`[${editor.value.substring(s,e)||'lien'}](https://url.com)`,s,e,'end'); editor.focus(); render(); }
