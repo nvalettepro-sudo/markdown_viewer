@@ -37,7 +37,7 @@ The app is a split-pane Markdown editor with a live preview. All logic is in a s
 | `exportHTML()` | Generates a self-contained standalone HTML file with inlined CSS |
 | Divider resize | Drag-to-resize the editor/preview split via `mousedown`/`mousemove`/`mouseup` |
 
-**External CDN dependencies** (no local copies — all loaded from cdnjs.cloudflare.com):
+**External CDN dependencies** (no local copies). Only `marked` blocks startup; `pdf.js`, `Tesseract.js` and `highlight.js` are loaded on first use through `loadLib()` / `needLib()` (see `LIB_URLS`). Add any new heavy library the same way:
 - `marked` 9.1.6 — Markdown parsing
 - `highlight.js` 11.9.0 — Syntax highlighting
 - `pdf.js` 3.11.174 — PDF text extraction (with web worker)
