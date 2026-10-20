@@ -439,7 +439,7 @@ header {
   <span id="sb-file">Sans titre.md</span>
   <span style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span style="color:var(--border)">|</span>
-  <span>v1.8.0 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">19/10/2026</span></span>
+  <span>v1.8.1 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -729,12 +729,16 @@ function autoStructure() {
 
   const ADMONITION = /^(note|tip|warning|important|caution|remarque|astuce|attention|avertissement)$/i;
   const NUMBERED = /^\d+(\.\d+)+\.?\s+\S/;
+  // « Localisation : » ou « Localisation: » : mots courts + deux points = titre, même sans ligne vide autour
+  const isColonTitle = t => /^[A-ZÀ-ÖØ-Þ"«][^:]*\S\s?:$/.test(t) && t.split(/\s+/).length <= 8;
+  const isColon = i => isColonTitle(lines[i].trim());
   const isBlank = i => i < 0 || i >= n || !lines[i].trim();
   const isCandidate = i => {
     if (skip[i]) return false;
     const t = lines[i].trim();
     if (!t || t.length > 60) return false;
     if (/^#{1,6}\s/.test(t) || /^([-*+>]|\d+[.)])\s/.test(t) || /^[-=_*]{3,}$/.test(t)) return false;
+    if (isColonTitle(t)) return !ADMONITION.test(t.replace(/\s*:$/, ''));
     if (/[.,;:!]$/.test(t) || /^[(\[{]/.test(t)) return false;
     if (!/^[A-ZÀ-ÖØ-Þ"«]/.test(t) && !NUMBERED.test(t)) return false;
     if (/\([^)]*[.,][^)]*\)/.test(t) || ADMONITION.test(t)) return false;
@@ -745,14 +749,17 @@ function autoStructure() {
   for (let i = 0; i < n; i++) if (isCandidate(i)) cands.push(i);
 
   // Une suite de 3+ candidats sans texte entre eux ressemble à une liste : on ne garde que le premier
+  // Convention explicite « Titre : » utilisée au moins 2 fois : elle prime sur les heuristiques, source de faux positifs
+  if (cands.filter(isColon).length >= 2) cands = cands.filter(isColon);
+  const plain = cands.filter(i => !isColon(i));
   const kept = [];
-  for (let a = 0; a < cands.length;) {
+  for (let a = 0; a < plain.length;) {
     let b = a;
-    while (b + 1 < cands.length && lines.slice(cands[b] + 1, cands[b + 1]).every(l => !l.trim())) b++;
-    if (b - a + 1 >= 3) kept.push(cands[a]); else for (let k = a; k <= b; k++) kept.push(cands[k]);
+    while (b + 1 < plain.length && lines.slice(plain[b] + 1, plain[b + 1]).every(l => !l.trim())) b++;
+    if (b - a + 1 >= 3) kept.push(plain[a]); else for (let k = a; k <= b; k++) kept.push(plain[k]);
     a = b + 1;
   }
-  cands = kept;
+  cands = [...kept, ...cands.filter(isColon)].sort((x, y) => x - y);
 
   if (!cands.length) {
     showErrorWarn('Aucun titre détecté',
@@ -762,11 +769,11 @@ function autoStructure() {
 
   const hasH1 = lines.some((l, i) => !skip[i] && /^#\s/.test(l));
   const firstBody = lines.findIndex((l, i) => !skip[i] && l.trim());
-  const titleIdx = (!hasH1 && cands[0] === firstBody) ? cands[0] : -1;
+  const titleIdx = (!hasH1 && cands[0] === firstBody && !isColon(cands[0])) ? cands[0] : -1;
 
   // Volume de texte qui suit chaque candidat jusqu'au suivant
   const numLevel = i => { const m = lines[i].trim().match(/^(\d+(?:\.\d+)+)/); return m ? Math.min(m[1].split('.').length + 1, 4) : 0; };
-  const rest = cands.filter(i => i !== titleIdx && !numLevel(i));
+  const rest = cands.filter(i => i !== titleIdx && !numLevel(i) && !isColon(i));
   const density = rest.map(i => {
     const next = cands.find(c => c > i);
     return lines.slice(i + 1, next === undefined ? n : next).filter(l => l.trim()).length;
@@ -779,6 +786,9 @@ function autoStructure() {
   const levels = new Map();
   if (titleIdx >= 0) levels.set(titleIdx, 1);
   cands.forEach(i => { if (numLevel(i)) levels.set(i, numLevel(i)); });
+  // Les titres « mot : » sont tous des pairs : même niveau (H2 sous un titre de document, sinon H1)
+  const colonLevel = (hasH1 || titleIdx >= 0) ? 2 : 1;
+  cands.forEach(i => { if (isColon(i)) levels.set(i, colonLevel); });
   rest.forEach((i, k) => levels.set(i, levelOf(density[k])));
   // Un titre directement suivi d'un autre titre est son parent : un niveau au-dessus
   for (let k = rest.length - 2; k >= 0; k--) {
@@ -790,6 +800,7 @@ function autoStructure() {
 
 /* Aperçu des titres proposés : l'éditeur n'est modifié qu'au clic sur « Appliquer » */
 let hpState = null;
+const headingText = l => l.trim().replace(/\s*:$/, '');
 function openHeadingPreview(lines, levels) {
   hpState = { lines, items: [...levels.entries()].sort((a, b) => a[0] - b[0]).map(([idx, level]) => ({ idx, level, on: true })) };
   const list = document.getElementById('hp-list');
@@ -803,7 +814,7 @@ function openHeadingPreview(lines, levels) {
     for (let l = 1; l <= 4; l++) { const o = document.createElement('option'); o.value = l; o.textContent = 'H' + l; if (l === it.level) o.selected = true; sel.appendChild(o); }
     const txt = document.createElement('span');
     txt.className = 'hp-text';
-    txt.textContent = lines[it.idx].trim();
+    txt.textContent = headingText(lines[it.idx]);
     const ln = document.createElement('span');
     ln.className = 'hp-ln';
     ln.textContent = 'L' + (it.idx + 1);
@@ -830,7 +841,7 @@ function closeHeadingPreview() {
 function applyHeadingPreview() {
   if (!hpState) return;
   const chosen = new Map(hpState.items.filter(i => i.on).map(i => [i.idx, i.level]));
-  const out = hpState.lines.map((l, i) => chosen.has(i) ? '#'.repeat(chosen.get(i)) + ' ' + l.trim() : l);
+  const out = hpState.lines.map((l, i) => chosen.has(i) ? '#'.repeat(chosen.get(i)) + ' ' + headingText(l) : l);
   const c = chosen.size;
   closeHeadingPreview();
   setEditorContent(out.join('\n'));
