@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MD Viewer</title>
+<meta name="description" content="Convertis PDF, pages web, fichiers HTML et images en Markdown propre, directement dans ton navigateur.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230e0f14'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='700' text-anchor='middle' fill='%23e8b84b'%3EMD%3C/text%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -132,7 +134,7 @@ header {
   flex-shrink: 0;
   white-space: nowrap;
 }
-.url-fetch-btn:hover { background: var(--accent3); color: var(--bg); }
+@media (hover: hover) { .url-fetch-btn:hover { background: var(--accent3); color: var(--bg); } }
 .url-fetch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .header-actions {
@@ -156,9 +158,9 @@ header {
   transition: color 0.15s, background-color 0.15s, border-color 0.15s;
   white-space: nowrap;
 }
-.btn:hover { border-color: var(--accent); color: var(--accent); }
+@media (hover: hover) { .btn:hover { border-color: var(--accent); color: var(--accent); } }
 .btn.pdf-btn { border-color: var(--orange-dim); color: var(--orange); }
-.btn.pdf-btn:hover { border-color: var(--orange); }
+@media (hover: hover) { .btn.pdf-btn:hover { border-color: var(--orange); } }
 .btn-icon {
   width: 30px; height: 30px;
   display: flex; align-items: center; justify-content: center;
@@ -170,7 +172,7 @@ header {
   font-size: 15px;
   transition: color 0.15s, background-color 0.15s, border-color 0.15s;
 }
-.btn-icon:hover { border-color: var(--accent); color: var(--accent); }
+@media (hover: hover) { .btn-icon:hover { border-color: var(--accent); color: var(--accent); } }
 
 /* ── Toolbar ── */
 .toolbar {
@@ -197,7 +199,7 @@ header {
   transition: color 0.12s, background-color 0.12s;
   white-space: nowrap;
 }
-.tbtn:hover { background: var(--tag-bg); color: var(--accent); }
+@media (hover: hover) { .tbtn:hover { background: var(--tag-bg); color: var(--accent); } }
 .tbtn.h-btn { color: var(--accent2); }
 
 /* ── Layout ── */
@@ -231,7 +233,8 @@ header {
   flex-shrink: 0;
   transition: background-color 0.15s;
 }
-.divider:hover, .divider.dragging { background: var(--accent); }
+.divider.dragging { background: var(--accent); }
+@media (hover: hover) { .divider:hover { background: var(--accent); } }
 
 /* ── Éditeur ── */
 #editor {
@@ -269,12 +272,13 @@ header {
 .md-body h5, .md-body h6 { font-size: 1em; font-weight: 600; margin: 1em 0 0.3em; color: var(--muted); }
 .md-body p { line-height: 1.8; margin-bottom: 1em; }
 .md-body a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
-.md-body a:hover { border-color: var(--accent2); }
+@media (hover: hover) { .md-body a:hover { border-color: var(--accent2); } }
 .md-body strong { color: var(--text); font-weight: 600; }
 .md-body em { font-style: italic; color: var(--muted); }
 .md-body ul, .md-body ol { padding-left: 1.6em; margin-bottom: 1em; }
 .md-body li { margin-bottom: 0.3em; line-height: 1.7; }
 .md-body blockquote { border-left: 3px solid var(--accent); margin: 1.2em 0; padding: 8px 16px; background: var(--tag-bg); color: var(--muted); font-style: italic; }
+.md-body blockquote > :last-child, .md-body li > p:last-child { margin-bottom: 0; }
 .md-body hr { border: none; border-top: 1px solid var(--border); margin: 2em 0; }
 .md-body table { width: 100%; border-collapse: collapse; margin: 1.2em 0; font-size: 0.93em; }
 .md-body th { background: var(--tag-bg); padding: 8px 14px; text-align: left; font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.05em; text-transform: uppercase; color: var(--muted); border-bottom: 2px solid var(--border); }
@@ -287,13 +291,13 @@ header {
 .md-body.big > * { content-visibility: auto; contain-intrinsic-size: auto 90px; }
 
 /* ── Frontmatter ── */
-.md-body .toc { border: 1px solid var(--border); border-left: 3px solid var(--accent); background: var(--surface); padding: 12px 20px; margin: 1.5em 0; border-radius: 4px; }
+.md-body .toc { border: 1px solid var(--border); background: var(--surface); padding: 12px 20px; margin: 1.5em 0; border-radius: 4px; }
 .md-body .toc-title { font-family: var(--font-mono); font-size: 11px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin-bottom: 6px; }
 .md-body .toc ul { margin: 0; padding-left: 1.3em; list-style: none; }
 .md-body .toc > ul { padding-left: 0; }
 .md-body .toc li { margin: 2px 0; line-height: 1.5; }
 .md-body .toc a { text-decoration: none; }
-.md-body .toc a:hover { text-decoration: underline; }
+@media (hover: hover) { .md-body .toc a:hover { text-decoration: underline; } }
 .frontmatter-table { width: 100%; border-collapse: collapse; margin-bottom: 32px; font-family: var(--font-mono); font-size: 12px; border: 1px solid var(--border); border-radius: 6px; overflow: hidden; }
 .frontmatter-table th { text-align: left; padding: 8px 14px; background: var(--tag-bg); color: var(--muted); font-weight: 600; width: 130px; border-bottom: 1px solid var(--border); }
 .frontmatter-table td { padding: 8px 14px; border-bottom: 1px solid var(--border); color: var(--text); }
@@ -323,7 +327,6 @@ header {
 .quality-warn {
   position: fixed; bottom: 36px; left: 20px; z-index: 210;
   background: var(--surface); border: 1px solid var(--orange);
-  border-left: 3px solid var(--orange);
   border-radius: 5px; padding: 12px 14px; max-width: 320px;
   font-family: var(--font-mono); font-size: 12px; color: var(--text);
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
@@ -342,9 +345,9 @@ header {
   transition: color 0.15s, background-color 0.15s, border-color 0.15s;
 }
 .qw-primary { border-color: var(--orange); color: var(--orange); background: transparent; }
-.qw-primary:hover { background: var(--orange); color: var(--bg); }
+@media (hover: hover) { .qw-primary:hover { background: var(--orange); color: var(--bg); } }
 .qw-close { border-color: var(--border); color: var(--muted); background: transparent; }
-.qw-close:hover { border-color: var(--muted); color: var(--text); }
+@media (hover: hover) { .qw-close:hover { border-color: var(--muted); color: var(--text); } }
 
 /* ── Aperçu auto-titres ── */
 .hp-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 300; display: none; align-items: center; justify-content: center; }
@@ -355,7 +358,7 @@ header {
 .hp-hint { padding: 0 16px 10px; color: var(--muted); font-size: 12px; line-height: 1.5; }
 .hp-list { overflow-y: auto; padding: 4px 8px; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); flex: 1; }
 .hp-row { display: flex; align-items: center; gap: 8px; padding: 4px 8px; border-radius: 3px; }
-.hp-row:hover { background: rgba(127,127,127,0.1); }
+@media (hover: hover) { .hp-row:hover { background: rgba(127,127,127,0.1); } }
 .hp-row.off .hp-text { opacity: 0.35; text-decoration: line-through; }
 .hp-row select { font-family: var(--font-mono); font-size: 11px; background: var(--bg); color: var(--text); border: 1px solid var(--border); border-radius: 3px; padding: 2px 4px; }
 .hp-text { flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
@@ -482,14 +485,25 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
   *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
   .toast, .quality-warn { transform: none !important; }
 }
+
+.ic { width: 1.25em; height: 1.25em; vertical-align: -0.25em; fill: none; stroke: currentColor; stroke-width: 1.75; stroke-linecap: round; stroke-linejoin: round; flex-shrink: 0; }
+.btn-icon .ic { width: 17px; height: 17px; vertical-align: middle; }
+.url-bar-icon .ic { width: 15px; height: 15px; vertical-align: middle; }
+
+.quality-warn-btn[hidden] { display: none; }
+#preview:empty::before { content: "L'aperçu s'affiche ici dès que tu écris ou importes un document."; color: var(--muted); font-family: var(--font-mono); font-size: 12px; }
+input[type="checkbox"] { accent-color: var(--accent); }
+#editor, .hp-list { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
+.md-body ::selection { background: rgba(232,184,75,0.28); }
 </style>
 </head>
 <body data-view="editor">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol><symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol><symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol><symbol id="i-quote" viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5H4v6h4M14 21c3 0 7-1 7-8V5h-6v6h4"/></symbol><symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></symbol><symbol id="i-sync" viewBox="0 0 24 24"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></symbol><symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol></defs></svg>
 
 <!-- ── Header ── -->
 <header>
   <div class="logo">MD<span>.</span>Viewer</div>
-  <button class="btn menu-toggle" id="menu-btn" onclick="toggleMenu()" aria-expanded="false" aria-controls="header-actions">⋯ Menu</button>
+  <button class="btn menu-toggle" id="menu-btn" onclick="toggleMenu()" aria-expanded="false" aria-controls="header-actions"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg> Menu</button>
   <div class="stats">
     <span id="stat-read">0 min</span>
     <span><b id="stat-words">0</b> mots</span>
@@ -498,22 +512,22 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
 
   <!-- ── Barre URL ── -->
   <div class="url-bar">
-    <span class="url-bar-icon">🌐</span>
+    <span class="url-bar-icon"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg></span>
     <input id="url-input" type="url" aria-label="Adresse de la page web à importer" placeholder="https://exemple.com — colle une URL et appuie sur Entrée" autocomplete="off" spellcheck="false">
     <button class="url-fetch-btn" id="url-btn" onclick="fetchURL()">Importer</button>
   </div>
 
   <div class="header-actions" id="header-actions">
     <span class="menu-label">Importer un fichier</span>
-    <button class="btn" onclick="importFile()" aria-label="Importer un fichier Markdown ou texte">📂 MD</button>
-    <button class="btn pdf-btn" onclick="importPDF()" aria-label="Importer un fichier PDF">📄 PDF</button>
-    <button class="btn img-btn" onclick="importImage()" aria-label="Importer une image (reconnaissance de texte)">🖼 IMG</button>
-    <button class="btn html-btn" onclick="importHTML()" aria-label="Importer un fichier HTML">🌐 HTML</button>
+    <button class="btn" onclick="importFile()" aria-label="Importer un fichier Markdown ou texte"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg> MD</button>
+    <button class="btn pdf-btn" onclick="importPDF()" aria-label="Importer un fichier PDF"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg> PDF</button>
+    <button class="btn img-btn" onclick="importImage()" aria-label="Importer une image (reconnaissance de texte)"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> IMG</button>
+    <button class="btn html-btn" onclick="importHTML()" aria-label="Importer un fichier HTML"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg> HTML</button>
     <span class="menu-label">Exporter</span>
-    <button class="btn" onclick="exportMD()" aria-label="Exporter en Markdown">⬇ MD</button>
-    <button class="btn" onclick="exportHTML()" aria-label="Exporter en HTML">⬇ HTML</button>
+    <button class="btn" onclick="exportMD()" aria-label="Exporter en Markdown"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> MD</button>
+    <button class="btn" onclick="exportHTML()" aria-label="Exporter en HTML"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> HTML</button>
     <span class="menu-label">Affichage</span>
-    <button class="btn-icon" onclick="toggleTheme()" id="theme-btn" title="Thème clair / sombre" aria-label="Basculer entre thème clair et sombre">🌙</button>
+    <button class="btn-icon" onclick="toggleTheme()" id="theme-btn" title="Thème clair / sombre" aria-label="Basculer entre thème clair et sombre"><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg></button>
   </div>
 </header>
 
@@ -523,8 +537,8 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
   <button class="tbtn h-btn" onclick="insert('## ')" aria-label="Titre niveau 2">H2</button>
   <button class="tbtn h-btn" onclick="insert('### ')" aria-label="Titre niveau 3">H3</button>
   <button class="tbtn h-btn" onclick="insert('#### ')" aria-label="Titre niveau 4">H4</button>
-  <button class="tbtn" onclick="autoStructure()" aria-label="Détecter automatiquement les titres" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler." style="color:var(--accent)">⚡ Auto-titres</button>
-  <button class="tbtn" onclick="insertTOC()" aria-label="Insérer un sommaire dynamique" title="Insérer un sommaire dynamique à la position du curseur" style="color:var(--accent)">☰ Sommaire</button>
+  <button class="tbtn" onclick="autoStructure()" aria-label="Détecter automatiquement les titres" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler." style="color:var(--accent)"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg> Auto-titres</button>
+  <button class="tbtn" onclick="insertTOC()" aria-label="Insérer un sommaire dynamique" title="Insérer un sommaire dynamique à la position du curseur" style="color:var(--accent)"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg> Sommaire</button>
   <div class="toolbar-sep"></div>
   <button class="tbtn" onclick="wrap('**','**')" aria-label="Gras"><b>B</b></button>
   <button class="tbtn" onclick="wrap('*','*')" aria-label="Italique"><i>I</i></button>
@@ -533,14 +547,14 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
   <div class="toolbar-sep"></div>
   <button class="tbtn" onclick="insert('- ')" aria-label="Liste à puces">— List</button>
   <button class="tbtn" onclick="insert('1. ')" aria-label="Liste numérotée">1. List</button>
-  <button class="tbtn" onclick="insert('> ')" aria-label="Citation">❝ Quote</button>
+  <button class="tbtn" onclick="insert('> ')" aria-label="Citation"><svg class="ic" aria-hidden="true"><use href="#i-quote"/></svg> Quote</button>
   <button class="tbtn" onclick="insertHR()" aria-label="Ligne horizontale">— HR</button>
   <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="wrapLink()" aria-label="Insérer un lien">🔗 Lien</button>
+  <button class="tbtn" onclick="wrapLink()" aria-label="Insérer un lien"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg> Lien</button>
   <button class="tbtn" onclick="insertCode()" aria-label="Insérer un bloc de code">{ } Code</button>
-  <button class="tbtn" onclick="insertTable()" aria-label="Insérer un tableau">⊞ Table</button>
+  <button class="tbtn" onclick="insertTable()" aria-label="Insérer un tableau"><svg class="ic" aria-hidden="true"><use href="#i-table"/></svg> Table</button>
   <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="toggleSync()" id="sync-btn" aria-pressed="true" aria-label="Synchroniser le défilement de l'éditeur et de l'aperçu" style="color:var(--accent)">⇅ Sync</button>
+  <button class="tbtn" onclick="toggleSync()" id="sync-btn" aria-pressed="true" aria-label="Synchroniser le défilement de l'éditeur et de l'aperçu" style="color:var(--accent)"><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg> Sync</button>
 </div>
 
 <!-- ── Bascule éditeur / aperçu (mobile) ── -->
@@ -571,7 +585,7 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.11.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
+  <span class="status-version">v1.11.1 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -584,13 +598,13 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
   <div class="quality-warn-title" id="quality-warn-title">⚠ Conversion incomplète</div>
   <div class="quality-warn-body" id="quality-warn-body"></div>
   <div class="quality-warn-actions">
-    <button class="quality-warn-btn qw-primary" onclick="importHTML(); closeQualityWarn()">🌐 Importer le HTML</button>
-    <button class="quality-warn-btn qw-close" onclick="closeQualityWarn()">Ignorer</button>
+    <button class="quality-warn-btn qw-primary" id="qw-html-btn" onclick="importHTML(); closeQualityWarn()" hidden><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg> Importer le HTML</button>
+    <button class="quality-warn-btn qw-close" id="qw-close-btn" onclick="closeQualityWarn()">Fermer</button>
   </div>
 </div>
 <div class="hp-overlay" id="hp-overlay" onclick="if(event.target===this) closeHeadingPreview()">
   <div class="hp-box" role="dialog" aria-modal="true" aria-labelledby="hp-title">
-    <div class="hp-head"><span id="hp-title">⚡ Titres détectés</span> <span id="hp-count" aria-live="polite"></span></div>
+    <div class="hp-head"><span id="hp-title"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg> Titres détectés</span> <span id="hp-count" aria-live="polite"></span></div>
     <div class="hp-hint">Décoche les faux positifs et ajuste les niveaux. Rien n'est modifié tant que tu n'as pas cliqué sur « Appliquer ».</div>
     <div class="hp-list" id="hp-list"></div>
     <div class="hp-actions">
@@ -644,13 +658,7 @@ function loadLib(name) {
 /* ══════════════════════════════════════════════
    marked.js
 ══════════════════════════════════════════════ */
-if (window.marked) marked.setOptions({
-  highlight: (code, lang) => {
-    if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value;
-    return hljs.highlightAuto(code).value;
-  },
-  breaks: true, gfm: true,
-});
+if (window.marked) marked.setOptions({ breaks: true, gfm: true });
 
 /* ══════════════════════════════════════════════
    Titres (ids d'ancre) + sommaire dynamique
@@ -1092,7 +1100,7 @@ function insertTable() { const s=editor.selectionStart; editor.setRangeText('\n|
 function toggleTheme() {
   isDark = !isDark;
   document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
-  document.getElementById('theme-btn').textContent = isDark ? '🌙' : '☀️';
+  document.querySelector('#theme-btn use').setAttribute('href', isDark ? '#i-moon' : '#i-sun');
   const hl = document.getElementById('hl-theme');
   if (hl) hl.href = isDark
     ? 'https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css'
@@ -1150,6 +1158,7 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Escape') return;
   const h = document.querySelector('header');
   if (h.classList.contains('actions-open')) { toggleMenu(false); document.getElementById('menu-btn').focus(); }
+  else if (!hpState) closeQualityWarn();
 });
 
 /* ══════════════════════════════════════════════
@@ -1501,9 +1510,9 @@ async function fetchURL() {
     hideProgress();
     const msg = err.message;
     if (msg.includes('timeout') || msg.includes('abort') || msg.includes('Délai')) {
-      showErrorWarn('Délai dépassé', 'La page a mis trop de temps à répondre via les proxies.<br><br><b>Causes possibles :</b><br>• Site lent ou momentanément indisponible<br>• Page très lourde (vidéos, ressources massives)<br>• Connexion réseau instable<br><br><b>Alternatives :</b><br>• <b>Import HTML</b> — <b>Ctrl+S → "Page web complète"</b> dans le navigateur, puis glisse le .html ici<br>• <b>Import PDF</b> — <b>Ctrl+P → Enregistrer en PDF</b>, puis importe avec <b>PDF</b>');
+      showErrorWarn('Délai dépassé', 'La page a mis trop de temps à répondre via les proxies.<br><br><b>Causes possibles :</b><br>• Site lent ou momentanément indisponible<br>• Page très lourde (vidéos, ressources massives)<br>• Connexion réseau instable<br><br><b>Alternatives :</b><br>• <b>Import HTML</b> — <b>Ctrl+S → "Page web complète"</b> dans le navigateur, puis glisse le .html ici<br>• <b>Import PDF</b> — <b>Ctrl+P → Enregistrer en PDF</b>, puis importe avec <b>PDF</b>', true);
     } else if (msg.includes('Failed to fetch') || msg.includes('Connexion')) {
-      showErrorWarn('Connexion impossible', 'L\'application n\'a pas pu joindre les proxies CORS.<br><br><b>Causes possibles :</b><br>• Pas de connexion internet<br>• Proxy bloqué par un pare-feu ou un VPN<br><br>Vérifie ta connexion et réessaie, ou importe la page manuellement (<b>Ctrl+S → HTML</b> depuis le navigateur).');
+      showErrorWarn('Connexion impossible', 'L\'application n\'a pas pu joindre les proxies CORS.<br><br><b>Causes possibles :</b><br>• Pas de connexion internet<br>• Proxy bloqué par un pare-feu ou un VPN<br><br>Vérifie ta connexion et réessaie, ou importe la page manuellement (<b>Ctrl+S → HTML</b> depuis le navigateur).', true);
     } else {
       showProxyFailWarn();
     }
@@ -1866,7 +1875,7 @@ table{width:100%;border-collapse:collapse;margin:1.2em 0}
 th,td{padding:8px 12px;border:1px solid #ddd;text-align:left}
 th{background:#f5f5f5;font-size:.85em;text-transform:uppercase;font-family:monospace}
 a{color:#2563eb}img{max-width:100%}hr{border:none;border-top:1px solid #eee;margin:2em 0}
-.toc{border:1px solid #ddd;border-left:3px solid #c4832a;background:#f9f9f7;padding:12px 20px;margin:1.5em 0;border-radius:4px}
+.toc{border:1px solid #ddd;background:#f9f9f7;padding:12px 20px;margin:1.5em 0;border-radius:4px}
 .toc-title{font-family:monospace;font-size:.8em;text-transform:uppercase;letter-spacing:.08em;color:#666;margin-bottom:6px}
 .toc ul{margin:0;padding-left:1.3em;list-style:none}.toc>ul{padding-left:0}.toc li{margin:2px 0;line-height:1.5}.toc a{text-decoration:none}
 .frontmatter-table th{background:#f0f0f0;width:130px;font-family:monospace}
@@ -1927,7 +1936,8 @@ function showProxyFailWarn() {
     '<b>Alternatives — du plus complet au moins complet :</b><br>' +
     '• <b>Import HTML ✓✓✓</b> — ouvre la page, fais <b>Ctrl+S → "Page web complète"</b>, glisse le .html ici. Conserve les <b>tableaux, la mise en forme et les liens</b>.<br>' +
     '• <b>Import PDF ✓✓</b> — fais <b>Ctrl+P → Enregistrer en PDF</b>. Conserve le texte et la structure, mais les <b>tableaux complexes peuvent être perdus</b>.<br>' +
-    '• <b>Copier-coller ✓</b> — sélectionne et colle le texte dans l\'éditeur. Rapide, mais <b>tableaux, images et liens sont perdus</b>.'
+    '• <b>Copier-coller ✓</b> — sélectionne et colle le texte dans l\'éditeur. Rapide, mais <b>tableaux, images et liens sont perdus</b>.',
+    true
   );
 }
 
@@ -1938,17 +1948,18 @@ function showBlockedWarn(url) {
     '<b>Alternatives — du plus complet au moins complet :</b><br>' +
     '• <b>Import HTML ✓✓✓</b> — ouvre la page, fais <b>Ctrl+S → "Page web complète"</b>, glisse le .html ici. Conserve les <b>tableaux, la mise en forme et les liens</b>.<br>' +
     '• <b>Import PDF ✓✓</b> — fais <b>Ctrl+P → Enregistrer en PDF</b>. Conserve le texte et la structure, mais les <b>tableaux complexes peuvent être perdus</b>.<br>' +
-    '• <b>Copier-coller ✓</b> — sélectionne et colle le texte dans l\'éditeur. Rapide, mais <b>tableaux, images et liens sont perdus</b>.'
+    '• <b>Copier-coller ✓</b> — sélectionne et colle le texte dans l\'éditeur. Rapide, mais <b>tableaux, images et liens sont perdus</b>.',
+    true
   );
 }
 
-function showErrorWarn(title, body) {
+// withHtml : proposer le bouton « Importer le HTML » (seulement quand c'est une vraie issue de secours)
+function showErrorWarn(title, body, withHtml = false) {
   document.getElementById('quality-warn-title').textContent = title;
   document.getElementById('quality-warn-body').innerHTML = body;
-  const panel = document.getElementById('quality-warn');
-  panel.classList.add('show');
-  clearTimeout(panel._autoHide);
-  panel._autoHide = setTimeout(() => panel.classList.remove('show'), 25000);
+  document.getElementById('qw-html-btn').hidden = !withHtml;
+  document.getElementById('qw-close-btn').textContent = withHtml ? 'Ignorer' : 'Fermer';
+  document.getElementById('quality-warn').classList.add('show');
 }
 
 function checkConversionQuality(originalHtml, markdownResult) {
@@ -1980,7 +1991,8 @@ function checkConversionQuality(originalHtml, markdownResult) {
     issues.map(i => '• ' + i).join('<br>') +
     '<br><br><b>Pour un résultat complet :</b><br>' +
     '• <b>Import HTML ✓✓✓</b> — <b>Ctrl+S → "Page web complète"</b> dans le navigateur, conserve les <b>tableaux, la mise en forme et les liens</b><br>' +
-    '• <b>Import PDF ✓✓</b> — <b>Ctrl+P → Enregistrer en PDF</b>, mais les <b>tableaux complexes peuvent être perdus</b>'
+    '• <b>Import PDF ✓✓</b> — <b>Ctrl+P → Enregistrer en PDF</b>, mais les <b>tableaux complexes peuvent être perdus</b>',
+    true
   );
 }
 
