@@ -30,7 +30,7 @@ Undecided; not discussed. Repository evidence only: one self-contained HTML file
 Confirmed by the user:
 - The interface is in French.
 - The visible version number and date in the status bar are updated with every change.
-- The app must be usable across different browsers and on iPhone and iPad. Not yet verified: the current layout is a desktop split-pane editor/preview.
+- The app must be usable across different browsers and on iPhone and iPad. Adapted in v1.9.0 (responsive layout, touch targets, single-pane mode on phones), checked in Chromium emulation only; real Safari/iOS devices not yet tested.
 
 Documented in the repository (CLAUDE.md):
 - A single `index.html`, with no framework, no npm and no build; deployed from `main` on GitHub Pages.

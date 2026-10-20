@@ -2,7 +2,7 @@
 <html lang="fr" data-theme="dark">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MD Viewer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Crimson+Pro:ital,wght@0,300;0,600;1,300&display=swap" rel="stylesheet">
@@ -360,13 +360,110 @@ header {
 .progress-bar { height: 100%; background: var(--accent); border-radius: 2px; transition: width 0.3s; width: 0%; }
 .progress-bar.url-color { background: var(--accent3); }
 .progress-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: center; max-width: 280px; word-break: break-all; }
+
+/* ══════════════════════════════════════════════
+   Adaptation : tablette, téléphone, tactile
+══════════════════════════════════════════════ */
+html { -webkit-text-size-adjust: 100%; }
+@supports (height: 100dvh) { html, body { height: 100dvh; } }
+button, .btn, .tbtn, .view-tab { touch-action: manipulation; }
+
+.btn.img-btn  { border-color: #4be8a044; color: #4be8a0; }
+.btn.html-btn { border-color: #9b59b644; color: #9b59b6; }
+@media (hover: hover) {
+  .btn.img-btn:hover  { background: #4be8a0; color: #0e0f14; border-color: #4be8a0; }
+  .btn.html-btn:hover { background: #9b59b6; color: #fff;    border-color: #9b59b6; }
+}
+
+/* Éléments propres au mobile : masqués par défaut */
+.menu-toggle, .menu-label, .view-tabs { display: none; }
+.divider { position: relative; touch-action: none; }
+
+/* Fenêtre étroite (tablette portrait, petit écran) : l'en-tête passe sur deux lignes */
+@media (max-width: 1100px) {
+  header { height: auto; min-height: 48px; flex-wrap: wrap; padding-top: 8px; padding-bottom: 8px; row-gap: 8px; }
+  .url-bar { order: 3; flex: 1 0 100%; }
+  .header-actions { margin-left: auto; }
+}
+
+/* Tactile : cibles de 44 px, champs à 16 px (sinon iOS zoome à la saisie), poignée de séparateur élargie */
+@media (pointer: coarse) {
+  .btn, .tbtn, .url-fetch-btn, .quality-warn-btn, .view-tab, .menu-toggle { min-height: 44px; }
+  .btn, .tbtn, .menu-toggle { min-width: 44px; padding-left: 14px; padding-right: 14px; }
+  .btn-icon { width: 44px; height: 44px; }
+  .url-bar { height: 46px; padding-right: 0; }
+  .url-fetch-btn { align-self: stretch; min-height: 0; padding: 0 14px; border-width: 0 0 0 1px; border-radius: 0 3px 3px 0; }
+  #url-input, #editor { font-size: 16px; }
+  #url-input { align-self: stretch; }
+  .toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-top: 4px; padding-bottom: 4px; }
+  .toolbar::-webkit-scrollbar { display: none; }
+  .toolbar > * { flex-shrink: 0; }
+  .divider { width: 12px; }
+  .divider::after { content: ''; position: absolute; top: 0; bottom: 0; left: -14px; right: -14px; }
+  .hp-row { min-height: 44px; }
+  .hp-row input[type="checkbox"] { width: 22px; height: 22px; }
+  .hp-row select { min-height: 36px; font-size: 16px; }
+}
+
+/* Téléphone (portrait) ou paysage tactile très bas : un seul panneau à la fois, actions dans un menu */
+@media (max-width: 700px), (max-height: 500px) and (pointer: coarse) {
+  header { padding-top: 6px; padding-bottom: 6px; }
+  .stats { display: none; }
+  .menu-toggle { display: flex; align-items: center; justify-content: center; margin-left: auto; }
+  .header-actions { display: none; margin-left: 0; }
+  header { position: relative; z-index: 150; }
+  header.actions-open .header-actions {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px;
+    position: absolute; top: 100%; left: 0; right: 0;
+    padding: 12px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px));
+    background: var(--surface); border-bottom: 1px solid var(--border); box-shadow: 0 12px 32px rgba(0,0,0,0.45);
+    max-height: calc(100dvh - 130px); overflow-y: auto;
+  }
+  .menu-label { display: block; grid-column: 1 / -1; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-top: 4px; }
+  .header-actions .btn, .header-actions .btn-icon { width: 100%; justify-content: center; }
+
+  .toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-left: 8px; padding-right: 8px; }
+  .toolbar::-webkit-scrollbar { display: none; }
+  .toolbar > * { flex-shrink: 0; }
+
+  .view-tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
+  .view-tab { flex: 1; min-height: 44px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
+  .view-tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .pane-label, .divider { display: none; }
+  #editor-pane, #preview-pane { width: 100% !important; flex: 1 !important; }
+  body[data-view="editor"] #preview-pane { display: none; }
+  body[data-view="preview"] #editor-pane { display: none; }
+  body[data-view="preview"] .toolbar { display: none; }
+  #editor { padding: 16px 14px; }
+  #preview-wrap { padding: 16px 16px 24px; }
+
+  .status-tagline { display: none; }
+  .status-bar { gap: 12px; }
+  .status-file { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .status-version { margin-left: auto; white-space: nowrap; }
+  .progress-box { min-width: 0; width: min(340px, 88vw); padding: 24px; }
+  .quality-warn { left: 12px; right: 12px; max-width: none; }
+  .toast { right: 12px; left: 12px; text-align: center; }
+}
+
+@media (max-height: 500px) and (pointer: coarse) {
+  header { flex-wrap: nowrap; padding-top: 4px; padding-bottom: 4px; }
+  .url-bar { order: 0; flex: 1 1 auto; min-width: 0; }
+  .menu-toggle { margin-left: 0; }
+}
+
+/* Encoche et barre d'accueil iOS (viewport-fit=cover) */
+header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.status-bar { height: calc(24px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); }
+.toast, .quality-warn { bottom: calc(36px + env(safe-area-inset-bottom, 0px)); }
 </style>
 </head>
-<body>
+<body data-view="editor">
 
 <!-- ── Header ── -->
 <header>
   <div class="logo">MD<span>.</span>Viewer</div>
+  <button class="btn menu-toggle" id="menu-btn" onclick="toggleMenu()" aria-expanded="false" aria-controls="header-actions">⋯ Menu</button>
   <div class="stats">
     <span id="stat-read">0 min</span>
     <span><b id="stat-words">0</b> mots</span>
@@ -380,13 +477,16 @@ header {
     <button class="url-fetch-btn" id="url-btn" onclick="fetchURL()">Importer</button>
   </div>
 
-  <div class="header-actions">
+  <div class="header-actions" id="header-actions">
+    <span class="menu-label">Importer un fichier</span>
     <button class="btn" onclick="importFile()">📂 MD</button>
     <button class="btn pdf-btn" onclick="importPDF()">📄 PDF</button>
-    <button class="btn" style="border-color:#4be8a044;color:#4be8a0" onmouseover="this.style.background='#4be8a0';this.style.color='#0e0f14'" onmouseout="this.style.background='';this.style.color='#4be8a0'" onclick="importImage()">🖼 IMG</button>
-    <button class="btn" style="border-color:#9b59b644;color:#9b59b6" onmouseover="this.style.background='#9b59b6';this.style.color='#fff'" onmouseout="this.style.background='';this.style.color='#9b59b6'" onclick="importHTML()">🌐 HTML</button>
+    <button class="btn img-btn" onclick="importImage()">🖼 IMG</button>
+    <button class="btn html-btn" onclick="importHTML()">🌐 HTML</button>
+    <span class="menu-label">Exporter</span>
     <button class="btn" onclick="exportMD()">⬇ MD</button>
     <button class="btn" onclick="exportHTML()">⬇ HTML</button>
+    <span class="menu-label">Affichage</span>
     <button class="btn-icon" onclick="toggleTheme()" id="theme-btn" title="Thème">🌙</button>
   </div>
 </header>
@@ -417,6 +517,12 @@ header {
   <button class="tbtn" onclick="toggleSync()" id="sync-btn" style="color:var(--accent)">⇅ Sync</button>
 </div>
 
+<!-- ── Bascule éditeur / aperçu (mobile) ── -->
+<div class="view-tabs" role="tablist" aria-label="Affichage">
+  <button class="view-tab" role="tab" data-view="editor" aria-selected="true" onclick="setView('editor')">Éditeur</button>
+  <button class="view-tab" role="tab" data-view="preview" aria-selected="false" onclick="setView('preview')">Aperçu</button>
+</div>
+
 <!-- ── Workspace ── -->
 <div class="workspace" id="workspace">
   <div class="pane" id="editor-pane">
@@ -436,10 +542,10 @@ header {
 <div class="status-bar">
   <span>Ln <b id="sb-line">1</b> · Col <b id="sb-col">1</b></span>
   <span class="status-accent" id="sb-mode">ÉDITION</span>
-  <span id="sb-file">Sans titre.md</span>
-  <span style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
-  <span style="color:var(--border)">|</span>
-  <span>v1.8.2 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
+  <span id="sb-file" class="status-file">Sans titre.md</span>
+  <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
+  <span class="status-tagline" style="color:var(--border)">|</span>
+  <span class="status-version">v1.9.0 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -912,9 +1018,44 @@ const workspace = document.getElementById('workspace');
 const editorPane = document.getElementById('editor-pane');
 const previewPane = document.getElementById('preview-pane');
 let isResizing = false;
-divider.addEventListener('mousedown', () => { isResizing=true; divider.classList.add('dragging'); document.body.style.cursor='col-resize'; document.body.style.userSelect='none'; });
-document.addEventListener('mousemove', e => { if(!isResizing)return; const r=workspace.getBoundingClientRect(); const p=Math.min(Math.max(((e.clientX-r.left)/r.width)*100,15),85); editorPane.style.flex='none'; editorPane.style.width=p+'%'; previewPane.style.flex='1'; });
-document.addEventListener('mouseup', () => { if(!isResizing)return; isResizing=false; divider.classList.remove('dragging'); document.body.style.cursor=''; document.body.style.userSelect=''; });
+// Événements « pointeur » : souris, doigt et stylet ; la capture garde le geste même hors du séparateur
+divider.addEventListener('pointerdown', e => {
+  isResizing = true;
+  divider.setPointerCapture(e.pointerId);
+  divider.classList.add('dragging');
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+});
+divider.addEventListener('pointermove', e => {
+  if (!isResizing) return;
+  const r = workspace.getBoundingClientRect();
+  const p = Math.min(Math.max(((e.clientX - r.left) / r.width) * 100, 15), 85);
+  editorPane.style.flex = 'none'; editorPane.style.width = p + '%'; previewPane.style.flex = '1';
+});
+const endResize = () => {
+  if (!isResizing) return;
+  isResizing = false;
+  divider.classList.remove('dragging');
+  document.body.style.cursor = ''; document.body.style.userSelect = '';
+};
+['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => divider.addEventListener(t, endResize));
+
+/* ══════════════════════════════════════════════
+   Mobile : bascule éditeur / aperçu + menu d'actions
+══════════════════════════════════════════════ */
+function setView(v) {
+  document.body.dataset.view = v;
+  document.querySelectorAll('.view-tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === v)));
+}
+function toggleMenu(force) {
+  const h = document.querySelector('header');
+  const open = force ?? !h.classList.contains('actions-open');
+  h.classList.toggle('actions-open', open);
+  document.getElementById('menu-btn').setAttribute('aria-expanded', String(open));
+}
+document.querySelector('.header-actions').addEventListener('click', e => { if (e.target.closest('button')) toggleMenu(false); });
+document.addEventListener('pointerdown', e => { if (!e.target.closest('header')) toggleMenu(false); });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleMenu(false); });
 
 /* ══════════════════════════════════════════════
    Fichiers .md
