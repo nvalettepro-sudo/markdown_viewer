@@ -439,7 +439,7 @@ header {
   <span id="sb-file">Sans titre.md</span>
   <span style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span style="color:var(--border)">|</span>
-  <span>v1.8.1 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
+  <span>v1.8.2 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -745,6 +745,13 @@ function autoStructure() {
     return isBlank(i - 1) || isBlank(i + 1);
   };
 
+  // « #Titre » sans espace après le # : titre mal formé, à corriger en « # Titre » (niveau conservé)
+  const fixes = new Map();
+  for (let i = 0; i < n; i++) {
+    const m = !skip[i] && lines[i].trim().match(/^(#{1,6})(\p{L}.{0,59})$/u);
+    if (m) fixes.set(i, m[1].length);
+  }
+
   let cands = [];
   for (let i = 0; i < n; i++) if (isCandidate(i)) cands.push(i);
 
@@ -761,13 +768,13 @@ function autoStructure() {
   }
   cands = [...kept, ...cands.filter(isColon)].sort((x, y) => x - y);
 
-  if (!cands.length) {
+  if (!cands.length && !fixes.size) {
     showErrorWarn('Aucun titre détecté',
       'Aucune ligne ne ressemble à un titre dans ce texte.<br><br><b>Un titre est reconnu s\'il est :</b><br>• court (60 caractères max)<br>• isolé par une ligne vide<br>• sans ponctuation finale (. , ; : !)<br>• commence par une majuscule<br><br>Les lignes déjà titrées (#), listes, tableaux et blocs de code sont ignorés. Tu peux aussi poser les titres à la main avec les boutons <b>H1–H4</b>.');
     return;
   }
 
-  const hasH1 = lines.some((l, i) => !skip[i] && /^#\s/.test(l));
+  const hasH1 = lines.some((l, i) => !skip[i] && /^#\s/.test(l)) || [...fixes.values()].includes(1);
   const firstBody = lines.findIndex((l, i) => !skip[i] && l.trim());
   const titleIdx = (!hasH1 && cands[0] === firstBody && !isColon(cands[0])) ? cands[0] : -1;
 
@@ -789,6 +796,7 @@ function autoStructure() {
   // Les titres « mot : » sont tous des pairs : même niveau (H2 sous un titre de document, sinon H1)
   const colonLevel = (hasH1 || titleIdx >= 0) ? 2 : 1;
   cands.forEach(i => { if (isColon(i)) levels.set(i, colonLevel); });
+  fixes.forEach((lv, i) => levels.set(i, lv));
   rest.forEach((i, k) => levels.set(i, levelOf(density[k])));
   // Un titre directement suivi d'un autre titre est son parent : un niveau au-dessus
   for (let k = rest.length - 2; k >= 0; k--) {
@@ -800,7 +808,7 @@ function autoStructure() {
 
 /* Aperçu des titres proposés : l'éditeur n'est modifié qu'au clic sur « Appliquer » */
 let hpState = null;
-const headingText = l => l.trim().replace(/\s*:$/, '');
+const headingText = l => l.trim().replace(/^#{1,6}(?=\p{L})/u, '').replace(/\s*:$/, '');
 function openHeadingPreview(lines, levels) {
   hpState = { lines, items: [...levels.entries()].sort((a, b) => a[0] - b[0]).map(([idx, level]) => ({ idx, level, on: true })) };
   const list = document.getElementById('hp-list');
