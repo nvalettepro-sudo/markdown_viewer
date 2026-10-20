@@ -43,6 +43,10 @@ The app is a split-pane Markdown editor with a live preview. All logic is in a s
 - `pdf.js` 3.11.174 — PDF text extraction (with web worker)
 - Google Fonts — JetBrains Mono + Crimson Pro
 
+## Style variants (`variantes/`)
+
+`variantes/apple.html`, `colore.html` and `brutaliste.html` are standalone, static style mockups of the main screen (same markup and content, only the CSS differs). They are not the app: `index.html` is unaffected, so they carry no version number.
+
 ## Versioning
 
 The version number is displayed in the status bar (bottom-right of the app). It **must be updated with every code change**, without being asked:
