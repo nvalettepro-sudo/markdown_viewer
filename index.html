@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <link id="hl-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <style>
@@ -31,11 +31,19 @@
   --tag-bg:    #1e2130;
   --font-mono: 'JetBrains Mono', monospace;
   --font-body: 'Crimson Pro', Georgia, serif;
+  --font-ui:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  --blue:      #4b9ee8;
+  --on-blue:   #0e0f14;
+  --soft:      rgba(255,255,255,0.07);
+  --in-bg:     rgba(75,158,232,0.16);
+  --in-fg:     #7ab8f0;
+  --out-bg:    rgba(75,232,160,0.14);
+  --out-fg:    #4be8a0;
 }
 [data-theme="light"] {
-  --bg:      #f5f3ee;
-  --surface: #ffffff;
-  --border:  #d8d4c8;
+  --bg:      #ffffff;
+  --surface: #f5f5f7;
+  --border:  #d2d2d7;
   --accent:  #8b5d1e;
   --accent2: #2668b3;
   --accent3: #147750;
@@ -44,10 +52,17 @@
   --accent3-dim: #14775055;
   --orange-dim:  #aa4b1655;
   --violet-dim:  #8f4bab55;
-  --text:    #2a2620;
-  --muted:   #6e6659;
-  --code-bg: #eceae4;
-  --tag-bg:  #ede9e0;
+  --text:    #1d1d1f;
+  --muted:   #636366;
+  --code-bg: #f0f0f3;
+  --tag-bg:  #ececf0;
+  --blue:    #0066cc;
+  --on-blue: #ffffff;
+  --soft:    rgba(0,0,0,0.05);
+  --in-bg:   rgba(0,102,204,0.10);
+  --in-fg:   #0058b0;
+  --out-bg:  rgba(20,119,80,0.12);
+  --out-fg:  #0f6b47;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
@@ -159,8 +174,6 @@ header {
   white-space: nowrap;
 }
 @media (hover: hover) { .btn:hover { border-color: var(--accent); color: var(--accent); } }
-.btn.pdf-btn { border-color: var(--orange-dim); color: var(--orange); }
-@media (hover: hover) { .btn.pdf-btn:hover { border-color: var(--orange); } }
 .btn-icon {
   width: 30px; height: 30px;
   display: flex; align-items: center; justify-content: center;
@@ -185,7 +198,6 @@ header {
   flex-shrink: 0;
   flex-wrap: wrap;
 }
-.toolbar-sep { width: 1px; height: 20px; background: var(--border); margin: 0 4px; }
 .tbtn {
   font-family: var(--font-mono);
   font-size: 11px;
@@ -200,7 +212,6 @@ header {
   white-space: nowrap;
 }
 @media (hover: hover) { .tbtn:hover { background: var(--tag-bg); color: var(--accent); } }
-.tbtn.h-btn { color: var(--accent2); }
 
 /* ── Layout ── */
 .workspace {
@@ -377,25 +388,60 @@ header {
 .progress-sub { font-family: var(--font-mono); font-size: 11px; color: var(--muted); text-align: center; max-width: 280px; word-break: break-all; }
 
 /* ══════════════════════════════════════════════
+   Style minimaliste : chrome sobre, un seul bleu d'action,
+   imports (bleu) et exports (vert) distincts. Le document garde ses fonds, tailles et couleurs.
+══════════════════════════════════════════════ */
+body { background: var(--surface); }
+.ic { stroke-width: 1.6; }
+header { height: 56px; padding-top: 0; padding-bottom: 0; gap: 12px; }
+.logo, .stats, #url-input, .url-fetch-btn, .btn, .btn-icon, .tbtn, .pane-label, .status-bar, .view-tab, .menu-label,
+.toast, .quality-warn, .quality-warn-btn, .hp-box, .hp-row select, .progress-box, .drop-overlay { font-family: var(--font-ui); }
+.logo { font-size: 15px; letter-spacing: -0.02em; text-transform: none; color: var(--text); }
+.logo span { color: var(--muted); }
+.stats { font-size: 12px; }
+.url-bar { height: 36px; min-width: 0; padding: 0 4px 0 14px; border: 0; border-radius: 999px; background: var(--soft); }
+.url-bar:focus-within { border-color: transparent; }
+#url-input { font-size: 13px; }
+.url-fetch-btn { height: 28px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--blue); color: var(--on-blue); font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+@media (hover: hover) { .url-fetch-btn:hover { background: var(--blue); filter: brightness(1.12); color: var(--on-blue); } }
+.header-actions { gap: 8px; }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--soft); color: var(--text); font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+.btn.act-in  { background: var(--in-bg);  color: var(--in-fg); }
+.btn.act-out { background: var(--out-bg); color: var(--out-fg); }
+.btn.act-start { margin-left: 10px; }
+@media (hover: hover) { .btn:hover, .btn.act-in:hover, .btn.act-out:hover { filter: brightness(1.18); border-color: transparent; color: inherit; } }
+.btn-icon { width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--soft); color: var(--muted); }
+@media (hover: hover) { .btn-icon:hover { filter: brightness(1.18); color: var(--text); border-color: transparent; } }
+.toolbar { gap: 10px; padding: 8px 16px; }
+.grp { display: flex; align-items: center; gap: 1px; padding: 2px; border: 1px solid var(--border); border-radius: 10px; background: var(--bg); flex-shrink: 0; }
+.tbtn { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 10px; border-radius: 8px; color: var(--text); font-size: 13px; font-weight: 500; }
+@media (hover: hover) { .tbtn:hover { background: var(--soft); color: var(--text); } }
+.tbtn.key { color: var(--in-fg); }
+.tbtn[aria-pressed="true"] { background: var(--in-bg); color: var(--in-fg); }
+.workspace { padding: 4px 16px 12px; overflow: hidden; }
+.pane { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; }
+.pane-label { padding: 12px 20px 0; border: 0; background: transparent; font-weight: 600; letter-spacing: 0.06em; }
+.divider { width: 12px; background: transparent; position: relative; }
+.divider::before { content: ''; position: absolute; top: 50%; left: 50%; width: 4px; height: 44px; margin: -22px 0 0 -2px; border-radius: 2px; background: var(--border); transition: background-color 0.15s; }
+.divider.dragging { background: transparent; }
+.divider.dragging::before { background: var(--blue); }
+@media (hover: hover) { .divider:hover { background: transparent; } .divider:hover::before { background: var(--blue); } }
+.status-bar { font-size: 12px; }
+
+/* ══════════════════════════════════════════════
    Adaptation : tablette, téléphone, tactile
 ══════════════════════════════════════════════ */
 html { -webkit-text-size-adjust: 100%; }
 @supports (height: 100dvh) { html, body { height: 100dvh; } }
 button, .btn, .tbtn, .view-tab { touch-action: manipulation; }
 
-.btn.img-btn  { border-color: var(--accent3-dim); color: var(--accent3); }
-.btn.html-btn { border-color: var(--violet-dim); color: var(--violet); }
-@media (hover: hover) {
-  .btn.img-btn:hover  { background: var(--accent3); color: var(--bg); border-color: var(--accent3); }
-  .btn.html-btn:hover { background: var(--violet);  color: var(--bg); border-color: var(--violet); }
-}
 
 /* Éléments propres au mobile : masqués par défaut */
 .menu-toggle, .menu-label, .view-tabs { display: none; }
 .divider { position: relative; touch-action: none; }
 
 /* Fenêtre étroite (tablette portrait, petit écran) : l'en-tête passe sur deux lignes */
-@media (max-width: 1100px) {
+@media (max-width: 1200px) {
   header { height: auto; min-height: 48px; flex-wrap: wrap; padding-top: 8px; padding-bottom: 8px; row-gap: 8px; }
   .url-bar { order: 3; flex: 1 0 100%; }
   .header-actions { margin-left: auto; }
@@ -406,8 +452,9 @@ button, .btn, .tbtn, .view-tab { touch-action: manipulation; }
   .btn, .tbtn, .url-fetch-btn, .quality-warn-btn, .view-tab, .menu-toggle { min-height: 44px; }
   .btn, .tbtn, .menu-toggle { min-width: 44px; padding-left: 14px; padding-right: 14px; }
   .btn-icon { width: 44px; height: 44px; }
-  .url-bar { height: 46px; padding-right: 0; }
-  .url-fetch-btn { align-self: stretch; min-height: 0; padding: 0 14px; border-width: 0 0 0 1px; border-radius: 0 3px 3px 0; }
+  .grp { padding: 3px; }
+  .url-bar { height: 52px; padding-right: 4px; }
+  .url-fetch-btn { min-height: 44px; padding: 0 16px; }
   #url-input, #editor { font-size: 16px; }
   #url-input { align-self: stretch; }
   .toolbar { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; padding-top: 4px; padding-bottom: 4px; }
@@ -442,10 +489,12 @@ button, .btn, .tbtn, .view-tab { touch-action: manipulation; }
   .toolbar > * { flex-shrink: 0; }
 
   .view-tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
-  .view-tab { flex: 1; min-height: 44px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
-  .view-tab[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .view-tab { flex: 1; min-height: 44px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); font-size: 13px; font-weight: 500; cursor: pointer; }
+  .view-tab[aria-pressed="true"] { color: var(--in-fg); border-bottom-color: var(--blue); }
   .pane-label, .divider { display: none; }
   #editor-pane, #preview-pane { width: 100% !important; flex: 1 !important; }
+  .workspace { padding: 8px; }
+  .btn.act-start { margin-left: 0; }
   body[data-view="editor"] #preview-pane { display: none; }
   body[data-view="preview"] #editor-pane { display: none; }
   body[data-view="preview"] .toolbar { display: none; }
@@ -519,13 +568,13 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
   <div class="header-actions" id="header-actions">
     <span class="menu-label">Importer un fichier</span>
-    <button class="btn" onclick="importFile()" aria-label="Importer un fichier Markdown ou texte"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg> MD</button>
-    <button class="btn pdf-btn" onclick="importPDF()" aria-label="Importer un fichier PDF"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg> PDF</button>
-    <button class="btn img-btn" onclick="importImage()" aria-label="Importer une image (reconnaissance de texte)"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> IMG</button>
-    <button class="btn html-btn" onclick="importHTML()" aria-label="Importer un fichier HTML"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg> HTML</button>
+    <button class="btn act-in" onclick="importFile()" aria-label="Importer un fichier Markdown ou texte"><svg class="ic" aria-hidden="true"><use href="#i-folder"/></svg> MD</button>
+    <button class="btn act-in" onclick="importPDF()" aria-label="Importer un fichier PDF"><svg class="ic" aria-hidden="true"><use href="#i-file"/></svg> PDF</button>
+    <button class="btn act-in" onclick="importImage()" aria-label="Importer une image (reconnaissance de texte)"><svg class="ic" aria-hidden="true"><use href="#i-image"/></svg> IMG</button>
+    <button class="btn act-in" onclick="importHTML()" aria-label="Importer un fichier HTML"><svg class="ic" aria-hidden="true"><use href="#i-globe"/></svg> HTML</button>
     <span class="menu-label">Exporter</span>
-    <button class="btn" onclick="exportMD()" aria-label="Exporter en Markdown"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> MD</button>
-    <button class="btn" onclick="exportHTML()" aria-label="Exporter en HTML"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> HTML</button>
+    <button class="btn act-out act-start" onclick="exportMD()" aria-label="Exporter en Markdown"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> MD</button>
+    <button class="btn act-out" onclick="exportHTML()" aria-label="Exporter en HTML"><svg class="ic" aria-hidden="true"><use href="#i-download"/></svg> HTML</button>
     <span class="menu-label">Affichage</span>
     <button class="btn-icon" onclick="toggleTheme()" id="theme-btn" title="Thème clair / sombre" aria-label="Basculer entre thème clair et sombre"><svg class="ic" aria-hidden="true"><use href="#i-moon"/></svg></button>
   </div>
@@ -533,28 +582,36 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
 <!-- ── Toolbar ── -->
 <div class="toolbar" role="toolbar" aria-label="Mise en forme du Markdown">
-  <button class="tbtn h-btn" onclick="insert('# ')" aria-label="Titre niveau 1">H1</button>
-  <button class="tbtn h-btn" onclick="insert('## ')" aria-label="Titre niveau 2">H2</button>
-  <button class="tbtn h-btn" onclick="insert('### ')" aria-label="Titre niveau 3">H3</button>
-  <button class="tbtn h-btn" onclick="insert('#### ')" aria-label="Titre niveau 4">H4</button>
-  <button class="tbtn" onclick="autoStructure()" aria-label="Détecter automatiquement les titres" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler." style="color:var(--accent)"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg> Auto-titres</button>
-  <button class="tbtn" onclick="insertTOC()" aria-label="Insérer un sommaire dynamique" title="Insérer un sommaire dynamique à la position du curseur" style="color:var(--accent)"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg> Sommaire</button>
-  <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="wrap('**','**')" aria-label="Gras"><b>B</b></button>
-  <button class="tbtn" onclick="wrap('*','*')" aria-label="Italique"><i>I</i></button>
-  <button class="tbtn" onclick="wrap('~~','~~')" aria-label="Barré"><s>S</s></button>
-  <button class="tbtn" onclick="wrap('`','`')" aria-label="Code en ligne">&#96;&#96;</button>
-  <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="insert('- ')" aria-label="Liste à puces">— List</button>
-  <button class="tbtn" onclick="insert('1. ')" aria-label="Liste numérotée">1. List</button>
-  <button class="tbtn" onclick="insert('> ')" aria-label="Citation"><svg class="ic" aria-hidden="true"><use href="#i-quote"/></svg> Quote</button>
-  <button class="tbtn" onclick="insertHR()" aria-label="Ligne horizontale">— HR</button>
-  <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="wrapLink()" aria-label="Insérer un lien"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg> Lien</button>
-  <button class="tbtn" onclick="insertCode()" aria-label="Insérer un bloc de code">{ } Code</button>
-  <button class="tbtn" onclick="insertTable()" aria-label="Insérer un tableau"><svg class="ic" aria-hidden="true"><use href="#i-table"/></svg> Table</button>
-  <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="toggleSync()" id="sync-btn" aria-pressed="true" aria-label="Synchroniser le défilement de l'éditeur et de l'aperçu" style="color:var(--accent)"><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg> Sync</button>
+  <div class="grp" role="group" aria-label="Titres automatiques et sommaire">
+    <button class="tbtn key" onclick="autoStructure()" aria-label="Détecter automatiquement les titres" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler."><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg> Auto-titres</button>
+    <button class="tbtn key" onclick="insertTOC()" aria-label="Insérer un sommaire dynamique" title="Insérer un sommaire dynamique à la position du curseur"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg> Sommaire</button>
+  </div>
+  <div class="grp" role="group" aria-label="Niveaux de titre">
+    <button class="tbtn" onclick="insert('# ')" aria-label="Titre niveau 1">H1</button>
+    <button class="tbtn" onclick="insert('## ')" aria-label="Titre niveau 2">H2</button>
+    <button class="tbtn" onclick="insert('### ')" aria-label="Titre niveau 3">H3</button>
+    <button class="tbtn" onclick="insert('#### ')" aria-label="Titre niveau 4">H4</button>
+  </div>
+  <div class="grp" role="group" aria-label="Style du texte">
+    <button class="tbtn" onclick="wrap('**','**')" aria-label="Gras"><b>B</b></button>
+    <button class="tbtn" onclick="wrap('*','*')" aria-label="Italique"><i>I</i></button>
+    <button class="tbtn" onclick="wrap('~~','~~')" aria-label="Barré"><s>S</s></button>
+    <button class="tbtn" onclick="wrap('`','`')" aria-label="Code en ligne">&#96;&#96;</button>
+  </div>
+  <div class="grp" role="group" aria-label="Listes et blocs">
+    <button class="tbtn" onclick="insert('- ')" aria-label="Liste à puces">— List</button>
+    <button class="tbtn" onclick="insert('1. ')" aria-label="Liste numérotée">1. List</button>
+    <button class="tbtn" onclick="insert('> ')" aria-label="Citation"><svg class="ic" aria-hidden="true"><use href="#i-quote"/></svg> Quote</button>
+    <button class="tbtn" onclick="insertHR()" aria-label="Ligne horizontale">— HR</button>
+  </div>
+  <div class="grp" role="group" aria-label="Insertions">
+    <button class="tbtn" onclick="wrapLink()" aria-label="Insérer un lien"><svg class="ic" aria-hidden="true"><use href="#i-link"/></svg> Lien</button>
+    <button class="tbtn" onclick="insertCode()" aria-label="Insérer un bloc de code">{ } Code</button>
+    <button class="tbtn" onclick="insertTable()" aria-label="Insérer un tableau"><svg class="ic" aria-hidden="true"><use href="#i-table"/></svg> Table</button>
+  </div>
+  <div class="grp" role="group" aria-label="Défilement">
+    <button class="tbtn" onclick="toggleSync()" id="sync-btn" aria-pressed="true" aria-label="Synchroniser le défilement de l'éditeur et de l'aperçu"><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg> Sync</button>
+  </div>
 </div>
 
 <!-- ── Bascule éditeur / aperçu (mobile) ── -->
@@ -585,7 +642,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.11.1 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
+  <span class="status-version">v1.12.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -874,7 +931,6 @@ editor.addEventListener('input',  render);
 ══════════════════════════════════════════════ */
 function toggleSync() {
   syncScroll = !syncScroll;
-  document.getElementById('sync-btn').style.color = syncScroll ? 'var(--accent)' : 'var(--muted)';
   document.getElementById('sync-btn').setAttribute('aria-pressed', String(syncScroll));
   toast('Sync ' + (syncScroll ? 'activé' : 'désactivé'));
 }

@@ -40,7 +40,7 @@ Documented in the repository (CLAUDE.md):
 
 ## Brand Commitments
 
-Name: MD Viewer (header wordmark "MD.VIEWER"). Voice: French, direct, instructive. Error messages explain the cause, then list alternatives ranked from most to least complete, with the limits of each (the owner asked for this explicitly).
+Name: MD Viewer (header wordmark "MD.Viewer"). Voice: French, direct, instructive. Error messages explain the cause, then list alternatives ranked from most to least complete, with the limits of each (the owner asked for this explicitly).
 
 ## Evidence on Hand
 
