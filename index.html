@@ -19,8 +19,13 @@
   --accent:    #e8b84b;
   --accent2:   #4b9ee8;
   --accent3:   #4be8a0;
+  --orange:    #e8834b;
+  --violet:    #ac75c2;
+  --accent3-dim: #4be8a044;
+  --orange-dim:  #e8834b44;
+  --violet-dim:  #ac75c244;
   --text:      #d4d8e8;
-  --muted:     #6b7090;
+  --muted:     #8589a4;
   --code-bg:   #1a1c26;
   --tag-bg:    #1e2130;
   --font-mono: 'JetBrains Mono', monospace;
@@ -30,11 +35,16 @@
   --bg:      #f5f3ee;
   --surface: #ffffff;
   --border:  #d8d4c8;
-  --accent:  #c4832a;
-  --accent2: #2a72c4;
-  --accent3: #1a9e6a;
+  --accent:  #8b5d1e;
+  --accent2: #2668b3;
+  --accent3: #147750;
+  --orange:  #aa4b16;
+  --violet:  #8f4bab;
+  --accent3-dim: #14775055;
+  --orange-dim:  #aa4b1655;
+  --violet-dim:  #8f4bab55;
   --text:    #2a2620;
-  --muted:   #8a8070;
+  --muted:   #6e6659;
   --code-bg: #eceae4;
   --tag-bg:  #ede9e0;
 }
@@ -123,7 +133,7 @@ header {
   flex-shrink: 0;
   white-space: nowrap;
 }
-.url-fetch-btn:hover { background: var(--accent3); color: #0e0f14; }
+.url-fetch-btn:hover { background: var(--accent3); color: var(--bg); }
 .url-fetch-btn:disabled { opacity: 0.4; cursor: not-allowed; }
 
 .header-actions {
@@ -148,8 +158,8 @@ header {
   white-space: nowrap;
 }
 .btn:hover { border-color: var(--accent); color: var(--accent); }
-.btn.pdf-btn { border-color: #e8834b44; color: #e8834b; }
-.btn.pdf-btn:hover { border-color: #e8834b; }
+.btn.pdf-btn { border-color: var(--orange-dim); color: var(--orange); }
+.btn.pdf-btn:hover { border-color: var(--orange); }
 .btn-icon {
   width: 30px; height: 30px;
   display: flex; align-items: center; justify-content: center;
@@ -304,14 +314,14 @@ header {
 .drop-overlay small { font-size: 12px; color: var(--muted); letter-spacing: 0.05em; }
 
 /* ── Toast ── */
-.toast { position: fixed; bottom: 36px; right: 20px; background: var(--accent); color: #0e0f14; font-family: var(--font-mono); font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 3px; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 200; }
+.toast { position: fixed; bottom: 36px; right: 20px; background: var(--accent); color: var(--bg); font-family: var(--font-mono); font-size: 12px; font-weight: 600; padding: 8px 16px; border-radius: 3px; opacity: 0; transform: translateY(8px); transition: all 0.2s; pointer-events: none; z-index: 200; }
 .toast.show { opacity: 1; transform: translateY(0); }
 
 /* ── Panneau d'avertissement qualité ── */
 .quality-warn {
   position: fixed; bottom: 36px; left: 20px; z-index: 210;
-  background: var(--surface); border: 1px solid #e8834b;
-  border-left: 3px solid #e8834b;
+  background: var(--surface); border: 1px solid var(--orange);
+  border-left: 3px solid var(--orange);
   border-radius: 5px; padding: 12px 14px; max-width: 320px;
   font-family: var(--font-mono); font-size: 11px; color: var(--text);
   box-shadow: 0 4px 20px rgba(0,0,0,0.4);
@@ -319,7 +329,7 @@ header {
   transition: all 0.25s; pointer-events: none;
 }
 .quality-warn.show { opacity: 1; transform: translateY(0); pointer-events: all; }
-.quality-warn-title { color: #e8834b; font-weight: 600; font-size: 11px; margin-bottom: 6px; letter-spacing: 0.05em; }
+.quality-warn-title { color: var(--orange); font-weight: 600; font-size: 11px; margin-bottom: 6px; letter-spacing: 0.05em; }
 .quality-warn-body { color: var(--muted); line-height: 1.6; margin-bottom: 10px; }
 .quality-warn-body b { color: var(--text); }
 .quality-warn-actions { display: flex; gap: 6px; }
@@ -329,8 +339,8 @@ header {
   letter-spacing: 0.05em; text-transform: uppercase; border: 1px solid;
   transition: all 0.15s;
 }
-.qw-primary { border-color: #e8834b; color: #e8834b; background: transparent; }
-.qw-primary:hover { background: #e8834b; color: #0e0f14; }
+.qw-primary { border-color: var(--orange); color: var(--orange); background: transparent; }
+.qw-primary:hover { background: var(--orange); color: var(--bg); }
 .qw-close { border-color: var(--border); color: var(--muted); background: transparent; }
 .qw-close:hover { border-color: var(--muted); color: var(--text); }
 
@@ -368,11 +378,11 @@ html { -webkit-text-size-adjust: 100%; }
 @supports (height: 100dvh) { html, body { height: 100dvh; } }
 button, .btn, .tbtn, .view-tab { touch-action: manipulation; }
 
-.btn.img-btn  { border-color: #4be8a044; color: #4be8a0; }
-.btn.html-btn { border-color: #9b59b644; color: #9b59b6; }
+.btn.img-btn  { border-color: var(--accent3-dim); color: var(--accent3); }
+.btn.html-btn { border-color: var(--violet-dim); color: var(--violet); }
 @media (hover: hover) {
-  .btn.img-btn:hover  { background: #4be8a0; color: #0e0f14; border-color: #4be8a0; }
-  .btn.html-btn:hover { background: #9b59b6; color: #fff;    border-color: #9b59b6; }
+  .btn.img-btn:hover  { background: var(--accent3); color: var(--bg); border-color: var(--accent3); }
+  .btn.html-btn:hover { background: var(--violet);  color: var(--bg); border-color: var(--violet); }
 }
 
 /* Éléments propres au mobile : masqués par défaut */
@@ -428,7 +438,7 @@ button, .btn, .tbtn, .view-tab { touch-action: manipulation; }
 
   .view-tabs { display: flex; background: var(--surface); border-bottom: 1px solid var(--border); flex-shrink: 0; }
   .view-tab { flex: 1; min-height: 44px; background: none; border: none; border-bottom: 2px solid transparent; color: var(--muted); font-family: var(--font-mono); font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; cursor: pointer; }
-  .view-tab[aria-selected="true"] { color: var(--accent); border-bottom-color: var(--accent); }
+  .view-tab[aria-pressed="true"] { color: var(--accent); border-bottom-color: var(--accent); }
   .pane-label, .divider { display: none; }
   #editor-pane, #preview-pane { width: 100% !important; flex: 1 !important; }
   body[data-view="editor"] #preview-pane { display: none; }
@@ -456,6 +466,20 @@ button, .btn, .tbtn, .view-tab { touch-action: manipulation; }
 header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
 .status-bar { height: calc(24px + env(safe-area-inset-bottom, 0px)); padding-bottom: env(safe-area-inset-bottom, 0px); }
 .toast, .quality-warn { bottom: calc(36px + env(safe-area-inset-bottom, 0px)); }
+
+/* ══════════════════════════════════════════════
+   Robustesse : focus clavier, mouvement réduit, panneaux masqués aux lecteurs d'écran
+══════════════════════════════════════════════ */
+:focus-visible { outline: 2px solid var(--accent2); outline-offset: 2px; }
+#editor:focus-visible { outline: 2px solid var(--accent2); outline-offset: -2px; }
+.url-bar:focus-within { outline: 2px solid var(--accent2); outline-offset: 2px; }
+.toast, .quality-warn { visibility: hidden; }
+.toast.show, .quality-warn.show { visibility: visible; }
+.quality-warn-body { overflow-wrap: anywhere; }
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; }
+  .toast, .quality-warn { transform: none !important; }
+}
 </style>
 </head>
 <body data-view="editor">
@@ -473,66 +497,66 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
   <!-- ── Barre URL ── -->
   <div class="url-bar">
     <span class="url-bar-icon">🌐</span>
-    <input id="url-input" type="url" placeholder="https://exemple.com — colle une URL et appuie sur Entrée" autocomplete="off" spellcheck="false">
+    <input id="url-input" type="url" aria-label="Adresse de la page web à importer" placeholder="https://exemple.com — colle une URL et appuie sur Entrée" autocomplete="off" spellcheck="false">
     <button class="url-fetch-btn" id="url-btn" onclick="fetchURL()">Importer</button>
   </div>
 
   <div class="header-actions" id="header-actions">
     <span class="menu-label">Importer un fichier</span>
-    <button class="btn" onclick="importFile()">📂 MD</button>
-    <button class="btn pdf-btn" onclick="importPDF()">📄 PDF</button>
-    <button class="btn img-btn" onclick="importImage()">🖼 IMG</button>
-    <button class="btn html-btn" onclick="importHTML()">🌐 HTML</button>
+    <button class="btn" onclick="importFile()" aria-label="Importer un fichier Markdown ou texte">📂 MD</button>
+    <button class="btn pdf-btn" onclick="importPDF()" aria-label="Importer un fichier PDF">📄 PDF</button>
+    <button class="btn img-btn" onclick="importImage()" aria-label="Importer une image (reconnaissance de texte)">🖼 IMG</button>
+    <button class="btn html-btn" onclick="importHTML()" aria-label="Importer un fichier HTML">🌐 HTML</button>
     <span class="menu-label">Exporter</span>
-    <button class="btn" onclick="exportMD()">⬇ MD</button>
-    <button class="btn" onclick="exportHTML()">⬇ HTML</button>
+    <button class="btn" onclick="exportMD()" aria-label="Exporter en Markdown">⬇ MD</button>
+    <button class="btn" onclick="exportHTML()" aria-label="Exporter en HTML">⬇ HTML</button>
     <span class="menu-label">Affichage</span>
-    <button class="btn-icon" onclick="toggleTheme()" id="theme-btn" title="Thème">🌙</button>
+    <button class="btn-icon" onclick="toggleTheme()" id="theme-btn" title="Thème clair / sombre" aria-label="Basculer entre thème clair et sombre">🌙</button>
   </div>
 </header>
 
 <!-- ── Toolbar ── -->
-<div class="toolbar">
-  <button class="tbtn h-btn" onclick="insert('# ')">H1</button>
-  <button class="tbtn h-btn" onclick="insert('## ')">H2</button>
-  <button class="tbtn h-btn" onclick="insert('### ')">H3</button>
-  <button class="tbtn h-btn" onclick="insert('#### ')">H4</button>
-  <button class="tbtn" onclick="autoStructure()" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler." style="color:var(--accent)">⚡ Auto-titres</button>
-  <button class="tbtn" onclick="insertTOC()" title="Insérer un sommaire dynamique à la position du curseur" style="color:var(--accent)">☰ Sommaire</button>
+<div class="toolbar" role="toolbar" aria-label="Mise en forme du Markdown">
+  <button class="tbtn h-btn" onclick="insert('# ')" aria-label="Titre niveau 1">H1</button>
+  <button class="tbtn h-btn" onclick="insert('## ')" aria-label="Titre niveau 2">H2</button>
+  <button class="tbtn h-btn" onclick="insert('### ')" aria-label="Titre niveau 3">H3</button>
+  <button class="tbtn h-btn" onclick="insert('#### ')" aria-label="Titre niveau 4">H4</button>
+  <button class="tbtn" onclick="autoStructure()" aria-label="Détecter automatiquement les titres" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler." style="color:var(--accent)">⚡ Auto-titres</button>
+  <button class="tbtn" onclick="insertTOC()" aria-label="Insérer un sommaire dynamique" title="Insérer un sommaire dynamique à la position du curseur" style="color:var(--accent)">☰ Sommaire</button>
   <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="wrap('**','**')"><b>B</b></button>
-  <button class="tbtn" onclick="wrap('*','*')"><i>I</i></button>
-  <button class="tbtn" onclick="wrap('~~','~~')"><s>S</s></button>
-  <button class="tbtn" onclick="wrap('`','`')">&#96;&#96;</button>
+  <button class="tbtn" onclick="wrap('**','**')" aria-label="Gras"><b>B</b></button>
+  <button class="tbtn" onclick="wrap('*','*')" aria-label="Italique"><i>I</i></button>
+  <button class="tbtn" onclick="wrap('~~','~~')" aria-label="Barré"><s>S</s></button>
+  <button class="tbtn" onclick="wrap('`','`')" aria-label="Code en ligne">&#96;&#96;</button>
   <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="insert('- ')">— List</button>
-  <button class="tbtn" onclick="insert('1. ')">1. List</button>
-  <button class="tbtn" onclick="insert('> ')">❝ Quote</button>
-  <button class="tbtn" onclick="insertHR()">— HR</button>
+  <button class="tbtn" onclick="insert('- ')" aria-label="Liste à puces">— List</button>
+  <button class="tbtn" onclick="insert('1. ')" aria-label="Liste numérotée">1. List</button>
+  <button class="tbtn" onclick="insert('> ')" aria-label="Citation">❝ Quote</button>
+  <button class="tbtn" onclick="insertHR()" aria-label="Ligne horizontale">— HR</button>
   <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="wrapLink()">🔗 Lien</button>
-  <button class="tbtn" onclick="insertCode()">{ } Code</button>
-  <button class="tbtn" onclick="insertTable()">⊞ Table</button>
+  <button class="tbtn" onclick="wrapLink()" aria-label="Insérer un lien">🔗 Lien</button>
+  <button class="tbtn" onclick="insertCode()" aria-label="Insérer un bloc de code">{ } Code</button>
+  <button class="tbtn" onclick="insertTable()" aria-label="Insérer un tableau">⊞ Table</button>
   <div class="toolbar-sep"></div>
-  <button class="tbtn" onclick="toggleSync()" id="sync-btn" style="color:var(--accent)">⇅ Sync</button>
+  <button class="tbtn" onclick="toggleSync()" id="sync-btn" aria-pressed="true" aria-label="Synchroniser le défilement de l'éditeur et de l'aperçu" style="color:var(--accent)">⇅ Sync</button>
 </div>
 
 <!-- ── Bascule éditeur / aperçu (mobile) ── -->
-<div class="view-tabs" role="tablist" aria-label="Affichage">
-  <button class="view-tab" role="tab" data-view="editor" aria-selected="true" onclick="setView('editor')">Éditeur</button>
-  <button class="view-tab" role="tab" data-view="preview" aria-selected="false" onclick="setView('preview')">Aperçu</button>
+<div class="view-tabs" role="group" aria-label="Affichage">
+  <button class="view-tab" data-view="editor" aria-pressed="true" onclick="setView('editor')">Éditeur</button>
+  <button class="view-tab" data-view="preview" aria-pressed="false" onclick="setView('preview')">Aperçu</button>
 </div>
 
 <!-- ── Workspace ── -->
-<div class="workspace" id="workspace">
+<div class="workspace" id="workspace" role="main">
   <div class="pane" id="editor-pane">
     <div class="pane-label">Éditeur</div>
-    <textarea id="editor" spellcheck="false" placeholder="Colle du Markdown, ouvre un .md, glisse un .pdf, ou colle une URL dans la barre ci-dessus…"></textarea>
+    <textarea id="editor" aria-label="Éditeur Markdown" spellcheck="false" placeholder="Colle du Markdown, ouvre un .md, glisse un .pdf, ou colle une URL dans la barre ci-dessus…"></textarea>
   </div>
   <div class="divider" id="divider"></div>
   <div class="pane" id="preview-pane">
     <div class="pane-label">Aperçu</div>
-    <div id="preview-wrap">
+    <div id="preview-wrap" role="region" aria-label="Aperçu du document" tabindex="0">
       <div class="md-body" id="preview"></div>
     </div>
   </div>
@@ -544,8 +568,8 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
   <span class="status-accent" id="sb-mode">ÉDITION</span>
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
-  <span class="status-tagline" style="color:var(--border)">|</span>
-  <span class="status-version">v1.9.0 <span style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
+  <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
+  <span class="status-version">v1.10.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -553,8 +577,8 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
   ⬇ Déposer un fichier
   <small>.md · .txt · .pdf · .jpg · .png · .html</small>
 </div>
-<div class="toast" id="toast"></div>
-<div class="quality-warn" id="quality-warn">
+<div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+<div class="quality-warn" id="quality-warn" role="alert">
   <div class="quality-warn-title" id="quality-warn-title">⚠ Conversion incomplète</div>
   <div class="quality-warn-body" id="quality-warn-body"></div>
   <div class="quality-warn-actions">
@@ -563,8 +587,8 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
   </div>
 </div>
 <div class="hp-overlay" id="hp-overlay" onclick="if(event.target===this) closeHeadingPreview()">
-  <div class="hp-box">
-    <div class="hp-head">⚡ Titres détectés <span id="hp-count"></span></div>
+  <div class="hp-box" role="dialog" aria-modal="true" aria-labelledby="hp-title">
+    <div class="hp-head"><span id="hp-title">⚡ Titres détectés</span> <span id="hp-count" aria-live="polite"></span></div>
     <div class="hp-hint">Décoche les faux positifs et ajuste les niveaux. Rien n'est modifié tant que tu n'as pas cliqué sur « Appliquer ».</div>
     <div class="hp-list" id="hp-list"></div>
     <div class="hp-actions">
@@ -594,13 +618,13 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
 /* ══════════════════════════════════════════════
    PDF.js worker
 ══════════════════════════════════════════════ */
-pdfjsLib.GlobalWorkerOptions.workerSrc =
+if (window.pdfjsLib) pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
 /* ══════════════════════════════════════════════
    marked.js
 ══════════════════════════════════════════════ */
-marked.setOptions({
+if (window.marked) marked.setOptions({
   highlight: (code, lang) => {
     if (lang && hljs.getLanguage(lang)) return hljs.highlight(code, { language: lang }).value;
     return hljs.highlightAuto(code).value;
@@ -616,7 +640,7 @@ marked.setOptions({
 const TOC_MARKER = '<!-- TOC -->';
 const TOC_RE = /^\s*<!--\s*toc\s*-->\s*$/i;
 let headingIds = [];
-marked.use({ renderer: {
+if (window.marked) marked.use({ renderer: {
   heading(text, level) {
     const id = headingIds.shift();
     return id ? `<h${level} id="${id}">${text}</h${level}>\n` : `<h${level}>${text}</h${level}>\n`;
@@ -647,6 +671,7 @@ function buildTOC(entries) {
 }
 
 function mdToHTML(body) {
+  if (!window.marked) return '<pre>' + escHTML(body) + '</pre>';
   const tokens = marked.lexer(body);
   const heads = [], seen = {}, tmp = document.createElement('div');
   marked.walkTokens(tokens, t => {
@@ -764,7 +789,7 @@ function render() {
   debounce = setTimeout(() => {
     const { meta, body } = parseFrontmatter(editor.value);
     preview.innerHTML = frontmatterToHTML(meta) + mdToHTML(body);
-    preview.querySelectorAll('pre code:not(.hljs)').forEach(el => hljs.highlightElement(el));
+    if (window.hljs) preview.querySelectorAll('pre code:not(.hljs)').forEach(el => hljs.highlightElement(el));
     updateStats();
   }, 150);
 }
@@ -793,6 +818,7 @@ editor.addEventListener('input',  render);
 function toggleSync() {
   syncScroll = !syncScroll;
   document.getElementById('sync-btn').style.color = syncScroll ? 'var(--accent)' : 'var(--muted)';
+  document.getElementById('sync-btn').setAttribute('aria-pressed', String(syncScroll));
   toast('Sync ' + (syncScroll ? 'activé' : 'désactivé'));
 }
 editor.addEventListener('scroll', () => {
@@ -924,7 +950,9 @@ function openHeadingPreview(lines, levels) {
     row.className = 'hp-row';
     const cb = document.createElement('input');
     cb.type = 'checkbox'; cb.checked = true;
+    cb.setAttribute('aria-label', 'Inclure « ' + headingText(lines[it.idx]) + ' »');
     const sel = document.createElement('select');
+    sel.setAttribute('aria-label', 'Niveau de « ' + headingText(lines[it.idx]) + ' »');
     for (let l = 1; l <= 4; l++) { const o = document.createElement('option'); o.value = l; o.textContent = 'H' + l; if (l === it.level) o.selected = true; sel.appendChild(o); }
     const txt = document.createElement('span');
     txt.className = 'hp-text';
@@ -940,7 +968,10 @@ function openHeadingPreview(lines, levels) {
     list.appendChild(row);
   });
   updateHPCount();
+  hpState.opener = document.activeElement;
   document.getElementById('hp-overlay').classList.add('show');
+  const first = list.querySelector('input');
+  if (first) first.focus();
 }
 function updateHPCount() {
   const on = hpState.items.filter(i => i.on).length;
@@ -949,8 +980,9 @@ function updateHPCount() {
 }
 function closeHeadingPreview() {
   document.getElementById('hp-overlay').classList.remove('show');
+  const opener = hpState && hpState.opener;
   hpState = null;
-  editor.focus();
+  (opener && document.contains(opener) && opener.offsetParent !== null ? opener : editor).focus();
 }
 function applyHeadingPreview() {
   if (!hpState) return;
@@ -963,7 +995,15 @@ function applyHeadingPreview() {
   toast(`✓ ${c} titre${c > 1 ? 's' : ''} appliqué${c > 1 ? 's' : ''} — Ctrl+Z pour annuler`);
 }
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && hpState) closeHeadingPreview();
+  if (!hpState) return;
+  if (e.key === 'Escape') { closeHeadingPreview(); return; }
+  if (e.key !== 'Tab') return;
+  const f = [...document.querySelectorAll('#hp-overlay input, #hp-overlay select, #hp-overlay button')].filter(x => !x.disabled);
+  if (!f.length) return;
+  const first = f[0], last = f[f.length - 1];
+  if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+  else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  else if (!document.getElementById('hp-overlay').contains(document.activeElement)) { e.preventDefault(); first.focus(); }
 });
 /* Insère le marqueur de sommaire au curseur (un seul sommaire par document) */
 function insertTOC() {
@@ -990,7 +1030,7 @@ preview.addEventListener('click', e => {
   if (!a) return;
   e.preventDefault();
   const el = preview.querySelector('#' + CSS.escape(a.getAttribute('href').slice(1)));
-  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  if (el) el.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' });
 });
 function insertHR()    { const s=editor.selectionStart; editor.setRangeText('\n---\n',s,s,'end'); editor.focus(); render(); }
 function wrapLink()    { const s=editor.selectionStart,e=editor.selectionEnd; editor.setRangeText(`[${editor.value.substring(s,e)||'lien'}](https://url.com)`,s,e,'end'); editor.focus(); render(); }
@@ -1039,13 +1079,14 @@ const endResize = () => {
   document.body.style.cursor = ''; document.body.style.userSelect = '';
 };
 ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(t => divider.addEventListener(t, endResize));
+window.addEventListener('blur', endResize);
 
 /* ══════════════════════════════════════════════
    Mobile : bascule éditeur / aperçu + menu d'actions
 ══════════════════════════════════════════════ */
 function setView(v) {
   document.body.dataset.view = v;
-  document.querySelectorAll('.view-tab').forEach(t => t.setAttribute('aria-selected', String(t.dataset.view === v)));
+  document.querySelectorAll('.view-tab').forEach(t => t.setAttribute('aria-pressed', String(t.dataset.view === v)));
 }
 function toggleMenu(force) {
   const h = document.querySelector('header');
@@ -1055,7 +1096,11 @@ function toggleMenu(force) {
 }
 document.querySelector('.header-actions').addEventListener('click', e => { if (e.target.closest('button')) toggleMenu(false); });
 document.addEventListener('pointerdown', e => { if (!e.target.closest('header')) toggleMenu(false); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape') toggleMenu(false); });
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Escape') return;
+  const h = document.querySelector('header');
+  if (h.classList.contains('actions-open')) { toggleMenu(false); document.getElementById('menu-btn').focus(); }
+});
 
 /* ══════════════════════════════════════════════
    Fichiers .md
@@ -1100,6 +1145,7 @@ function importPDF() { document.getElementById('pdf-input').click(); }
 function handlePDFInput(input) { const f=input.files[0]; if(f) convertPDF(f); input.value=''; }
 
 async function convertPDF(file) {
+  if (needLib('pdfjsLib', 'PDF.js', 'l\'import de PDF')) return;
   showProgress('📄 Conversion PDF → Markdown', '', false);
   try {
     const ab  = await file.arrayBuffer();
@@ -1127,6 +1173,7 @@ async function convertPDF(file) {
 
     // Détection PDF scanné : moins de 20 chars par page en moyenne → OCR
     if (totalChars / N < 20) {
+      if (needLib('Tesseract', 'Tesseract.js', 'lire ce PDF scanné (il ne contient pas de texte, l\'OCR est nécessaire)')) { hideProgress(); return; }
       await convertPDFwithOCR(doc, N, base);
       return;
     }
@@ -1244,6 +1291,7 @@ function importImage() { document.getElementById('img-input').click(); }
 function handleImageInput(input) { const f = input.files[0]; if (f) convertImage(f); input.value = ''; }
 
 async function convertImage(file) {
+  if (needLib('Tesseract', 'Tesseract.js', 'la reconnaissance de texte (OCR)')) return;
   showProgress('🖼 OCR Image → Markdown', file.name, false);
   const base = file.name.replace(/\.[^.]+$/, '');
   currentFile = base + '.md';
@@ -1309,6 +1357,7 @@ document.getElementById('url-input').addEventListener('keydown', e => {
 async function fetchURL() {
   const input = document.getElementById('url-input');
   const btn   = document.getElementById('url-btn');
+  if (btn.disabled) return;
   let url     = input.value.trim();
 
   if (!url) { toast('⚠ Colle une URL puis appuie sur Entrée'); input.focus(); return; }
@@ -1805,6 +1854,19 @@ function toast(msg) {
 /* ══════════════════════════════════════════════
    Avertissement qualité conversion URL
 ══════════════════════════════════════════════ */
+
+/* Bibliothèque externe non chargée (réseau coupé, VPN, bloqueur de contenu) */
+function needLib(globalName, libName, feature) {
+  if (window[globalName]) return false;
+  showErrorWarn('Fonction indisponible : ' + libName + ' non chargée',
+    'Pour ' + feature + ', l\'application a besoin de <b>' + libName + '</b>, qui se télécharge depuis un CDN public. Il n\'a pas pu être chargé.<br><br><b>Causes possibles :</b><br>• Connexion internet absente ou instable<br>• VPN, pare-feu ou bloqueur de contenu<br><br><b>Que faire :</b> rétablis la connexion puis <b>recharge la page</b>. Le reste de l\'application (édition, import HTML, export) continue de fonctionner.');
+  return true;
+}
+window.addEventListener('load', () => {
+  if (!window.marked) showErrorWarn('Aperçu Markdown indisponible',
+    'La bibliothèque <b>marked</b> n\'a pas pu être chargée (connexion, VPN ou bloqueur de contenu). L\'aperçu affiche le texte brut, et l\'export HTML ne sera pas mis en forme.<br><br>Rétablis la connexion puis <b>recharge la page</b>.');
+});
+
 function closeQualityWarn() {
   document.getElementById('quality-warn').classList.remove('show');
 }
