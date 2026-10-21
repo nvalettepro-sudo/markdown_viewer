@@ -274,8 +274,8 @@ header {
 .md-body h1, .md-body h2, .md-body h3, .md-body h4 { text-wrap: balance; }
 .md-body h1 { font-size: 2.2em; font-weight: 600; letter-spacing: -0.025em; color: var(--text); line-height: 1.15; margin: 0.4em 0 0.6em; }
 .md-body h2 { font-size: 1.5em; font-weight: 600; letter-spacing: -0.02em; color: var(--text); margin: 1.8em 0 0.5em; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
-.md-body h3 { font-size: 1.25em; font-weight: 600; margin: 1.4em 0 0.4em; color: var(--accent); }
-.md-body h4 { font-size: 1.1em; font-weight: 600; margin: 1.2em 0 0.3em; color: var(--accent2); }
+.md-body h3 { font-size: 1.25em; font-weight: 600; margin: 1.4em 0 0.4em; color: var(--text); }
+.md-body h4 { font-size: 1.1em; font-weight: 600; margin: 1.2em 0 0.3em; color: var(--text); }
 .md-body h5, .md-body h6 { font-size: 1em; font-weight: 600; margin: 1em 0 0.3em; color: var(--muted); }
 .md-body p { line-height: 1.7; margin-bottom: 1em; }
 .md-body a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
@@ -416,7 +416,7 @@ header { height: 56px; padding-top: 0; padding-bottom: 0; gap: 12px; }
 .tbtn[aria-pressed="true"] { background: var(--in-bg); color: var(--in-fg); }
 .workspace { padding: 4px 16px 12px; overflow: hidden; }
 .pane { background: var(--bg); border: 1px solid var(--border); border-radius: 14px; }
-.pane-label { padding: 12px 20px 0; border: 0; background: transparent; font-weight: 600; letter-spacing: 0.06em; }
+.pane-label { padding: 12px 20px 10px; border: 0; background: transparent; font-weight: 600; letter-spacing: 0.06em; }
 .divider { width: 12px; background: transparent; position: relative; }
 .divider::before { content: ''; position: absolute; top: 50%; left: 50%; width: 4px; height: 44px; margin: -22px 0 0 -2px; border-radius: 2px; background: var(--border); transition: background-color 0.15s; }
 .divider.dragging { background: transparent; }
@@ -458,6 +458,7 @@ button, .btn, .tbtn, .view-tab { touch-action: manipulation; }
   .toolbar > * { flex-shrink: 0; }
   .divider { width: 12px; }
   .divider::after { content: ''; position: absolute; top: 0; bottom: 0; left: -14px; right: -14px; }
+  .md-body .toc a { display: inline-block; padding: 7px 0; }
   .hp-row { min-height: 44px; }
   .hp-row input[type="checkbox"] { width: 22px; height: 22px; }
   .hp-row select { min-height: 36px; font-size: 16px; }
@@ -543,7 +544,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 </style>
 </head>
 <body data-view="editor">
-<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol><symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol><symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol><symbol id="i-quote" viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5H4v6h4M14 21c3 0 7-1 7-8V5h-6v6h4"/></symbol><symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></symbol><symbol id="i-sync" viewBox="0 0 24 24"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></symbol><symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol></defs></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs><symbol id="i-folder" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol><symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol><symbol id="i-image" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="m21 15-5-5L5 21"/></symbol><symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol><symbol id="i-download" viewBox="0 0 24 24"><path d="M12 3v12M7 10l5 5 5-5M5 21h14"/></symbol><symbol id="i-moon" viewBox="0 0 24 24"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></symbol><symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol><symbol id="i-zap" viewBox="0 0 24 24"><path d="M13 2 3 14h9l-1 8 10-12h-9z"/></symbol><symbol id="i-list" viewBox="0 0 24 24"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></symbol><symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.5.5l3-3a5 5 0 0 0-7-7l-1.7 1.7M14 11a5 5 0 0 0-7.5-.5l-3 3a5 5 0 0 0 7 7l1.7-1.7"/></symbol><symbol id="i-quote" viewBox="0 0 24 24"><path d="M3 21c3 0 7-1 7-8V5H4v6h4M14 21c3 0 7-1 7-8V5h-6v6h4"/></symbol><symbol id="i-table" viewBox="0 0 24 24"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18"/></symbol><symbol id="i-trash" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6M10 11v6M14 11v6"/></symbol><symbol id="i-sync" viewBox="0 0 24 24"><path d="M7 4v16M3 8l4-4 4 4M17 20V4M13 16l4 4 4-4"/></symbol><symbol id="i-dots" viewBox="0 0 24 24"><circle cx="5" cy="12" r="1.2"/><circle cx="12" cy="12" r="1.2"/><circle cx="19" cy="12" r="1.2"/></symbol></defs></svg>
 
 <!-- ── Header ── -->
 <header>
@@ -582,6 +583,9 @@ input[type="checkbox"] { accent-color: var(--accent); }
     <button class="tbtn key" onclick="autoStructure()" aria-label="Détecter automatiquement les titres" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler."><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg> Auto-titres</button>
     <button class="tbtn key" onclick="insertTOC()" aria-label="Insérer un sommaire dynamique" title="Insérer un sommaire dynamique à la position du curseur"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg> Sommaire</button>
   </div>
+  <div class="grp" role="group" aria-label="Éditeur">
+    <button class="tbtn" onclick="clearEditor()" aria-label="Vider l'éditeur pour coller un nouveau texte" title="Efface le texte (le guide par défaut) pour laisser la place à ton contenu"><svg class="ic" aria-hidden="true"><use href="#i-trash"/></svg> Vider</button>
+  </div>
   <div class="grp" role="group" aria-label="Niveaux de titre">
     <button class="tbtn" onclick="insert('# ')" aria-label="Titre niveau 1">H1</button>
     <button class="tbtn" onclick="insert('## ')" aria-label="Titre niveau 2">H2</button>
@@ -606,7 +610,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
     <button class="tbtn" onclick="insertTable()" aria-label="Insérer un tableau"><svg class="ic" aria-hidden="true"><use href="#i-table"/></svg> Table</button>
   </div>
   <div class="grp" role="group" aria-label="Défilement">
-    <button class="tbtn" onclick="toggleSync()" id="sync-btn" aria-pressed="true" aria-label="Synchroniser le défilement de l'éditeur et de l'aperçu" title="Défilement synchronisé : quand tu fais défiler l'éditeur, l'aperçu suit. Clique pour activer ou désactiver."><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg> Sync</button>
+    <button class="tbtn" onclick="toggleSync()" id="sync-btn" aria-pressed="true" aria-label="Synchroniser le défilement de l'éditeur et de l'aperçu" title="Défilement synchronisé : l'éditeur et l'aperçu défilent ensemble, dans les deux sens. Clique pour activer ou désactiver."><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg> Sync</button>
   </div>
 </div>
 
@@ -638,7 +642,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.12.1 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
+  <span class="status-version">v1.13.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -813,42 +817,77 @@ function setEditorContent(text) {
 /* ══════════════════════════════════════════════
    Contenu par défaut
 ══════════════════════════════════════════════ */
-editor.value = `---
-title: Bienvenue dans MD Viewer
-tags: ["markdown", "pdf", "url", "standalone"]
+const DEFAULT_MD = `---
+title: Guide de MD Viewer
+tags: ["markdown", "pdf", "ocr", "html"]
 ---
 
-# Bienvenue dans MD Viewer
+# Guide de MD Viewer
 
-## ✨ Trois façons d'importer du contenu
+<!-- TOC -->
 
-### 📂 Fichier Markdown
-Clique sur **MD** ou glisse un fichier *.md / .txt* dans la fenêtre.
+MD Viewer transforme des documents bruts (PDF, pages web, images, fichiers HTML) en Markdown propre. Tu le corriges ici, puis tu l'exportes. Tout se passe dans ton navigateur.
 
-### 📄 Fichier PDF
-Clique sur **PDF** ou glisse un *.pdf* — le texte est extrait et converti en Markdown.
+## Démarrer avec ton propre texte
 
-### 🌐 Page Web (nouveau !)
-Colle une URL dans la **barre verte** en haut et clique **Importer**.
-La page est récupérée via proxy et convertie en Markdown propre.
+Clique sur **Vider**, dans la barre d'outils, entre Sommaire et H1. L'éditeur se vide et tu peux coller ton contenu. Ctrl+Z annule l'effacement.
 
----
+## Importer un document
 
-## 💡 Raccourcis clavier
+Les boutons bleus en haut à droite importent un fichier. Tu peux aussi le glisser directement dans la fenêtre.
 
-| Raccourci  | Action              |
-|------------|---------------------|
-| Ctrl+O     | Ouvrir .md          |
-| Ctrl+P     | Ouvrir PDF          |
-| Ctrl+U     | Importer URL        |
-| Ctrl+H     | Importer HTML       |
-| Ctrl+S     | Exporter .md        |
-| Ctrl+E     | Exporter .html      |
-| Ctrl+B     | Gras                |
-| Ctrl+I     | Italique            |
+| Source | Comment | À savoir |
+|---|---|---|
+| Texte ou Markdown | Bouton **MD** | Ouvre le fichier tel quel |
+| PDF | Bouton **PDF** | Le texte est extrait. Si le PDF est une image scannée, la reconnaissance de texte (OCR) prend le relais |
+| Image | Bouton **IMG** | JPG, PNG et autres. OCR en français et en anglais |
+| Page web enregistrée | Bouton **HTML** | Conserve les tableaux. C'est la meilleure option pour une page complexe |
+| Adresse web | Barre d'URL, puis **Importer** | Passe par des proxys publics, que certains sites bloquent |
 
-> Essaie : colle \`https://fr.wikipedia.org/wiki/BIM\` dans la barre URL !
+Si un import est incomplet ou bloqué, un message explique pourquoi. Il propose des alternatives (HTML, PDF, copier-coller) et précise leurs limites.
+
+## Structurer le texte
+
+### Auto-titres
+
+Sur un texte brut sans titres, **Auto-titres** repère les lignes qui ressemblent à des titres :
+
+- les lignes courtes et isolées par une ligne vide ;
+- les lignes numérotées, comme 2.1 Contexte, dont le niveau suit la numérotation ;
+- les lignes qui finissent par deux points, comme « Localisation : ».
+
+Une fenêtre affiche la proposition. Tu décoches les faux positifs, tu ajustes les niveaux, puis tu appliques. Ctrl+Z annule.
+
+### Sommaire dynamique
+
+**Sommaire** insère un marqueur (\`<!-- TOC -->\`) à la position du curseur. Le sommaire en haut de ce guide en est un exemple : il se met à jour tout seul quand tu modifies, ajoutes ou supprimes un titre.
+
+### Mise en forme
+
+Les boutons H1 à H4, gras, italique, barré, listes, citation, lien, code et tableau insèrent la syntaxe Markdown à la position du curseur.
+
+## Lire et exporter
+
+L'aperçu s'affiche à droite. Tant que **Sync** est actif, éditeur et aperçu défilent ensemble, dans les deux sens. Le bouton lune ou soleil bascule entre thème sombre et thème clair.
+
+Les deux boutons pleins, **MD** et **HTML** avec une flèche vers le bas, exportent le document. L'export HTML contient le sommaire complet et se lit sans MD Viewer.
+
+Sur téléphone, un menu regroupe les imports et les exports, et deux onglets alternent entre l'éditeur et l'aperçu.
+
+## Raccourcis clavier
+
+| Raccourci | Action |
+|---|---|
+| Ctrl+O | Ouvrir un fichier .md ou .txt |
+| Ctrl+P | Importer un PDF |
+| Ctrl+H | Importer un fichier HTML |
+| Ctrl+U | Aller à la barre d'URL |
+| Ctrl+S | Exporter en .md |
+| Ctrl+E | Exporter en .html |
+| Ctrl+B | Gras |
+| Ctrl+I | Italique |
 `;
+editor.value = DEFAULT_MD;
 
 render();
 updateStats();
@@ -925,16 +964,36 @@ editor.addEventListener('input',  render);
 /* ══════════════════════════════════════════════
    Sync scroll
 ══════════════════════════════════════════════ */
+/* Vide l'éditeur (annulable avec Ctrl+Z). Confirmation seulement si l'utilisateur a déjà son propre texte. */
+function clearEditor() {
+  const t = editor.value;
+  if (t.trim() && t !== DEFAULT_MD && !confirm("Effacer tout le texte de l'éditeur ?\n\nSur ordinateur, Ctrl+Z permet d'annuler.")) return;
+  editor.focus(); editor.select();
+  if (!document.execCommand('delete')) editor.value = '';
+  currentFile = 'Sans titre.md';
+  document.getElementById('sb-file').textContent = currentFile;
+  document.getElementById('sb-mode').textContent = 'ÉDITION';
+  render(); updateCursor();
+  editor.focus();
+}
 function toggleSync() {
   syncScroll = !syncScroll;
   document.getElementById('sync-btn').setAttribute('aria-pressed', String(syncScroll));
   toast('Défilement synchronisé ' + (syncScroll ? 'activé' : 'désactivé'));
 }
-editor.addEventListener('scroll', () => {
-  if (!syncScroll) return;
-  const ratio = editor.scrollTop / Math.max(1, editor.scrollHeight - editor.clientHeight);
-  previewWrap.scrollTop = ratio * (previewWrap.scrollHeight - previewWrap.clientHeight);
-});
+// Défilement proportionnel dans les deux sens ; on ignore l'événement provoqué par notre propre déplacement
+let lastSynced = null;
+function syncFrom(src, dst) {
+  if (!syncScroll || !src.clientHeight || !dst.clientHeight) return;
+  if (lastSynced && lastSynced.el === src && Math.abs(src.scrollTop - lastSynced.top) < 2) { lastSynced = null; return; }
+  const ratio = src.scrollTop / Math.max(1, src.scrollHeight - src.clientHeight);
+  const top = ratio * (dst.scrollHeight - dst.clientHeight);
+  lastSynced = { el: dst, top };
+  dst.scrollTop = top;
+  setTimeout(() => { lastSynced = null; }, 120);
+}
+editor.addEventListener('scroll', () => syncFrom(editor, previewWrap));
+previewWrap.addEventListener('scroll', () => syncFrom(previewWrap, editor));
 
 /* ══════════════════════════════════════════════
    Toolbar
@@ -1918,7 +1977,7 @@ function exportHTML() {
 <style>
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,system-ui,sans-serif;max-width:860px;margin:60px auto;padding:0 24px;line-height:1.8;color:#1a1a1a;background:#fff;font-size:17px}
 h1,h2,h3,h4{font-weight:600;margin-top:1.8em}
-h2{border-bottom:1px solid #ddd;padding-bottom:6px}h3{color:#c4832a}h4{color:#2a72c4}
+h2{border-bottom:1px solid #ddd;padding-bottom:6px}
 code{background:#f0f0f0;padding:2px 5px;border-radius:3px;font-size:.88em;font-family:monospace}
 pre{background:#f5f5f5;padding:0;border-radius:6px;overflow-x:auto;margin:1.2em 0}
 pre code{display:block;padding:16px 20px;background:none;font-size:13px}
