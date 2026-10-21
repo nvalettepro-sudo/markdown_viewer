@@ -47,6 +47,10 @@ The app is a split-pane Markdown editor with a live preview. All logic is in a s
 
 `variantes/apple.html`, `colore.html` and `brutaliste.html` are standalone, static style mockups of the main screen (same markup and content, only the CSS differs). They are not the app: `index.html` is unaffected, so they carry no version number.
 
+## App icon proposals (`icones/`)
+
+`icones/` holds five icon proposals (SVG + 1024px PNG) and a comparison page. They are not wired into `index.html` yet (no manifest / apple-touch-icon until one is chosen).
+
 ## Versioning
 
 The version number is displayed in the status bar (bottom-right of the app). It **must be updated with every code change**, without being asked:
