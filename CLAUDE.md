@@ -49,7 +49,7 @@ The app is a split-pane Markdown editor with a live preview. All logic is in a s
 
 ## App icon proposals (`icones/`)
 
-`icones/` holds five icon proposals (SVG + 1024px PNG) and a comparison page. They are not wired into `index.html` yet (no manifest / apple-touch-icon until one is chosen).
+`icones/` holds the exploration of icon proposals (comparison pages, SVG + PNG). The chosen icon (flat `.MD`: dark `#0e0f14` background, light letters `#d4d8e8`, blue dot `#4b9ee8`) lives at the repo root as `icon.svg` and is wired into `index.html` (favicon, `apple-touch-icon`, web manifest, header logo). To change the icon, regenerate `icon.svg` and the PNG sizes (180, 192, 512, maskable 512, favicon 32).
 
 ## Versioning
 
@@ -67,7 +67,7 @@ Update both the version number and the date (DD/MM/YYYY) on every commit.
 
 ## Constraints
 
-- **No frameworks, no npm** — keep it a single deployable HTML file.
+- **No frameworks, no npm** — keep it a single deployable HTML file. The only extra files are the icon/installation assets at the repo root (`icon.svg`, `icon-*.png`, `apple-touch-icon.png`, `favicon-32.png`, `manifest.webmanifest`).
 - **CORS limitation**: URL import relies on public proxies; it will fail for sites that block them. The proxy cascade is the intended workaround.
 - **PDF heuristics**: Heading detection in `convertPDF()` is font-size based (median × multipliers). It's approximate by design.
 - **GitHub Pages deployment**: push to `main` — Pages serves `index.html` at the repo root automatically.

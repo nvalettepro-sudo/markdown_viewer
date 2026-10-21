@@ -5,7 +5,15 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>MD Viewer</title>
 <meta name="description" content="Convertis PDF, pages web, fichiers HTML et images en Markdown propre, directement dans ton navigateur.">
-<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%230e0f14'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='15' font-weight='700' text-anchor='middle' fill='%23e8b84b'%3EMD%3C/text%3E%3C/svg%3E">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="icon" href="favicon-32.png" sizes="32x32" type="image/png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#0e0f14">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="MD Viewer">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
@@ -91,7 +99,9 @@ header {
   text-transform: uppercase;
   flex-shrink: 0;
 }
-.logo span { color: var(--muted); }
+.logo { display: flex; align-items: center; gap: 10px; }
+.logo-mark { display: block; border-radius: 22.37%; flex-shrink: 0; }
+.logo-text span { color: var(--muted); }
 .stats {
   font-family: var(--font-mono);
   font-size: 12px;
@@ -393,7 +403,7 @@ header { height: 56px; padding-top: 0; padding-bottom: 0; gap: 12px; }
 .logo, .stats, #url-input, .url-fetch-btn, .btn, .btn-icon, .tbtn, .pane-label, .status-bar, .view-tab, .menu-label,
 .toast, .quality-warn, .quality-warn-btn, .hp-box, .hp-row select, .progress-box, .drop-overlay { font-family: var(--font-ui); }
 .logo { font-size: 15px; letter-spacing: -0.02em; text-transform: none; color: var(--text); }
-.logo span { color: var(--muted); }
+.logo-text span { color: var(--muted); }
 .stats { font-size: 12px; }
 .url-bar { height: 36px; min-width: 0; padding: 0 4px 0 14px; border: 0; border-radius: 999px; background: var(--soft); }
 .url-bar:focus-within { border-color: transparent; }
@@ -556,7 +566,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 
 <!-- ── Header ── -->
 <header>
-  <div class="logo">MD<span>.</span>Viewer</div>
+  <div class="logo"><img class="logo-mark" src="icon.svg" width="30" height="30" alt=""><span class="logo-text">MD<span>.</span>Viewer</span></div>
   <button class="btn menu-toggle" id="menu-btn" onclick="toggleMenu()" aria-expanded="false" aria-controls="header-actions"><svg class="ic" aria-hidden="true"><use href="#i-dots"/></svg> Menu</button>
   <div class="stats">
     <span id="stat-read">0 min</span>
@@ -650,7 +660,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.15.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
+  <span class="status-version">v1.16.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
