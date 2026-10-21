@@ -543,7 +543,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 .md-body ::selection { background: rgba(232,184,75,0.28); }
 
 /* ── Barre « Annuler » après un effacement (utile sur mobile, sans Ctrl+Z) ── */
-.undo-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(44px + env(safe-area-inset-bottom, 0px)); z-index: 205; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 24px); padding: 6px 6px 6px 18px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font-family: var(--font-ui); font-size: 13px; box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
+.undo-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(84px + env(safe-area-inset-bottom, 0px)); z-index: 205; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 24px); padding: 6px 6px 6px 18px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font-family: var(--font-ui); font-size: 13px; box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
 .undo-bar[hidden] { display: none; }
 #undo-msg { white-space: nowrap; }
 .undo-btn { height: 32px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--in-bg); color: var(--in-fg); font: inherit; font-weight: 500; cursor: pointer; }
@@ -650,7 +650,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.14.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
+  <span class="status-version">v1.15.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -818,12 +818,20 @@ let debounce   = null;
 let lastRenderMs = 0, previewDirty = false;
 let currentFile = 'Sans titre.md';
 
-function setEditorContent(text) {
+// Dernier état « posé » du document : sert à proposer Annuler quand un import remplace un texte existant
+let docSnap = { text: '', file: 'Sans titre.md', mode: 'ÉDITION' };
+function takeSnap() { docSnap = { text: editor.value, file: currentFile, mode: document.getElementById('sb-mode').textContent }; }
+function setEditorContent(text, opts = {}) {
+  const prev = docSnap;
   editor.focus();
   editor.select();
   document.execCommand('insertText', false, text);
   // fallback si execCommand non supporté (rare)
   if (editor.value !== text) { editor.value = text; }
+  takeSnap();
+  if (opts.offerUndo !== false && prev.text.trim() && prev.text !== DEFAULT_MD && prev.text !== text) {
+    showUndoBar('Texte remplacé par l\'import.', { ...prev, expect: text });
+  }
 }
 
 /* ══════════════════════════════════════════════
@@ -900,6 +908,7 @@ Sur téléphone, un menu regroupe les imports et les exports, et deux onglets al
 | Ctrl+I | Italique |
 `;
 editor.value = DEFAULT_MD;
+takeSnap();
 
 render();
 updateStats();
@@ -1004,19 +1013,21 @@ function hideUndoBar() {
   clearTimeout(undoTimer);
   document.getElementById('undo-bar').hidden = true;
 }
-// Restaure le texte seulement si l'éditeur est toujours vide : on n'écrase jamais un nouveau contenu
+// Restaure le texte seulement si l'éditeur contient encore exactement ce qu'on vient de poser (vide, ou l'import) : on n'écrase jamais un nouveau contenu
 function undoClear() {
   const before = undoState;
   hideUndoBar();
-  if (!before || editor.value !== '') return;
-  setEditorContent(before.text);
+  if (!before || editor.value !== (before.expect ?? '')) return;
+  setEditorContent(before.text, { offerUndo: false });
   currentFile = before.file;
   document.getElementById('sb-file').textContent = currentFile;
   document.getElementById('sb-mode').textContent = before.mode;
+  takeSnap();
   render(); updateCursor();
   toast('✓ Texte restauré');
 }
 editor.addEventListener('input', hideUndoBar);
+editor.addEventListener('input', takeSnap);
 function toggleSync() {
   syncScroll = !syncScroll;
   document.getElementById('sync-btn').setAttribute('aria-pressed', String(syncScroll));
@@ -1199,7 +1210,7 @@ function applyHeadingPreview() {
   const out = hpState.lines.map((l, i) => chosen.has(i) ? '#'.repeat(chosen.get(i)) + ' ' + headingText(l) : l);
   const c = chosen.size;
   closeHeadingPreview();
-  setEditorContent(out.join('\n'));
+  setEditorContent(out.join('\n'), { offerUndo: false });
   render();
   toast(`✓ ${c} titre${c > 1 ? 's' : ''} appliqué${c > 1 ? 's' : ''} — Ctrl+Z pour annuler`);
 }
