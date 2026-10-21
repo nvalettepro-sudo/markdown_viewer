@@ -541,6 +541,14 @@ header, .toolbar, .status-bar { padding-left: max(16px, env(safe-area-inset-left
 input[type="checkbox"] { accent-color: var(--accent); }
 #editor, .hp-list { scrollbar-width: thin; scrollbar-color: var(--border) transparent; }
 .md-body ::selection { background: rgba(232,184,75,0.28); }
+
+/* ── Barre « Annuler » après un effacement (utile sur mobile, sans Ctrl+Z) ── */
+.undo-bar { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(44px + env(safe-area-inset-bottom, 0px)); z-index: 205; display: flex; align-items: center; gap: 12px; max-width: calc(100vw - 24px); padding: 6px 6px 6px 18px; border: 1px solid var(--border); border-radius: 999px; background: var(--surface); color: var(--text); font-family: var(--font-ui); font-size: 13px; box-shadow: 0 8px 28px rgba(0,0,0,0.35); }
+.undo-bar[hidden] { display: none; }
+#undo-msg { white-space: nowrap; }
+.undo-btn { height: 32px; padding: 0 16px; border: 0; border-radius: 999px; background: var(--in-bg); color: var(--in-fg); font: inherit; font-weight: 500; cursor: pointer; }
+@media (hover: hover) { .undo-btn:hover { filter: brightness(1.18); } }
+@media (pointer: coarse) { .undo-btn { min-height: 44px; min-width: 44px; } }
 </style>
 </head>
 <body data-view="editor">
@@ -642,13 +650,17 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.13.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
+  <span class="status-version">v1.14.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
 <div class="drop-overlay" id="drop-overlay">
   ⬇ Déposer un fichier
   <small>.md · .txt · .pdf · .jpg · .png · .html</small>
+</div>
+<div class="undo-bar" id="undo-bar" role="status" aria-live="polite" hidden>
+  <span id="undo-msg">Texte effacé.</span>
+  <button type="button" class="undo-btn" onclick="undoClear()">Annuler</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
 <div class="quality-warn" id="quality-warn" role="alert">
@@ -968,6 +980,7 @@ editor.addEventListener('input',  render);
 function clearEditor() {
   const t = editor.value;
   if (t.trim() && t !== DEFAULT_MD && !confirm("Effacer tout le texte de l'éditeur ?\n\nSur ordinateur, Ctrl+Z permet d'annuler.")) return;
+  const before = { text: t, file: currentFile, mode: document.getElementById('sb-mode').textContent };
   editor.focus(); editor.select();
   if (!document.execCommand('delete')) editor.value = '';
   currentFile = 'Sans titre.md';
@@ -975,7 +988,35 @@ function clearEditor() {
   document.getElementById('sb-mode').textContent = 'ÉDITION';
   render(); updateCursor();
   editor.focus();
+  if (before.text.trim()) showUndoBar('Texte effacé.', before);
 }
+
+let undoState = null, undoTimer = null;
+function showUndoBar(msg, before) {
+  undoState = before;
+  document.getElementById('undo-msg').textContent = msg;
+  document.getElementById('undo-bar').hidden = false;
+  clearTimeout(undoTimer);
+  undoTimer = setTimeout(hideUndoBar, 12000);
+}
+function hideUndoBar() {
+  undoState = null;
+  clearTimeout(undoTimer);
+  document.getElementById('undo-bar').hidden = true;
+}
+// Restaure le texte seulement si l'éditeur est toujours vide : on n'écrase jamais un nouveau contenu
+function undoClear() {
+  const before = undoState;
+  hideUndoBar();
+  if (!before || editor.value !== '') return;
+  setEditorContent(before.text);
+  currentFile = before.file;
+  document.getElementById('sb-file').textContent = currentFile;
+  document.getElementById('sb-mode').textContent = before.mode;
+  render(); updateCursor();
+  toast('✓ Texte restauré');
+}
+editor.addEventListener('input', hideUndoBar);
 function toggleSync() {
   syncScroll = !syncScroll;
   document.getElementById('sync-btn').setAttribute('aria-pressed', String(syncScroll));
