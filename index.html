@@ -9,7 +9,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;600&family=Crimson+Pro:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:ital,wght@0,400;0,500;0,600;1,400&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
 <link id="hl-theme" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
 <style>
@@ -30,15 +30,13 @@
   --code-bg:   #1a1c26;
   --tag-bg:    #1e2130;
   --font-mono: 'JetBrains Mono', monospace;
-  --font-body: 'Crimson Pro', Georgia, serif;
+  --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --font-ui:   'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
   --blue:      #4b9ee8;
   --on-blue:   #0e0f14;
   --soft:      rgba(255,255,255,0.07);
   --in-bg:     rgba(75,158,232,0.16);
   --in-fg:     #7ab8f0;
-  --out-bg:    rgba(75,232,160,0.14);
-  --out-fg:    #4be8a0;
 }
 [data-theme="light"] {
   --bg:      #ffffff;
@@ -61,8 +59,6 @@
   --soft:    rgba(0,0,0,0.05);
   --in-bg:   rgba(0,102,204,0.10);
   --in-fg:   #0058b0;
-  --out-bg:  rgba(20,119,80,0.12);
-  --out-fg:  #0f6b47;
 }
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; overflow: hidden; }
@@ -273,15 +269,15 @@ header {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
-.md-body { max-width: 780px; font-size: 1.1rem; }
+.md-body { max-width: 780px; font-size: 1rem; }
 .md-body p, .md-body li, .md-body blockquote { max-width: 68ch; text-wrap: pretty; }
 .md-body h1, .md-body h2, .md-body h3, .md-body h4 { text-wrap: balance; }
-.md-body h1 { font-size: 2.4em; font-weight: 600; color: var(--text); line-height: 1.2; margin: 0.4em 0 0.6em; }
-.md-body h2 { font-size: 1.6em; font-weight: 600; color: var(--text); margin: 1.8em 0 0.5em; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
+.md-body h1 { font-size: 2.2em; font-weight: 600; letter-spacing: -0.025em; color: var(--text); line-height: 1.15; margin: 0.4em 0 0.6em; }
+.md-body h2 { font-size: 1.5em; font-weight: 600; letter-spacing: -0.02em; color: var(--text); margin: 1.8em 0 0.5em; padding-bottom: 6px; border-bottom: 1px solid var(--border); }
 .md-body h3 { font-size: 1.25em; font-weight: 600; margin: 1.4em 0 0.4em; color: var(--accent); }
 .md-body h4 { font-size: 1.1em; font-weight: 600; margin: 1.2em 0 0.3em; color: var(--accent2); }
 .md-body h5, .md-body h6 { font-size: 1em; font-weight: 600; margin: 1em 0 0.3em; color: var(--muted); }
-.md-body p { line-height: 1.8; margin-bottom: 1em; }
+.md-body p { line-height: 1.7; margin-bottom: 1em; }
 .md-body a { color: var(--accent2); text-decoration: none; border-bottom: 1px solid transparent; transition: border-color 0.15s; }
 @media (hover: hover) { .md-body a:hover { border-color: var(--accent2); } }
 .md-body strong { color: var(--text); font-weight: 600; }
@@ -402,12 +398,12 @@ header { height: 56px; padding-top: 0; padding-bottom: 0; gap: 12px; }
 .url-bar { height: 36px; min-width: 0; padding: 0 4px 0 14px; border: 0; border-radius: 999px; background: var(--soft); }
 .url-bar:focus-within { border-color: transparent; }
 #url-input { font-size: 13px; }
-.url-fetch-btn { height: 28px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--blue); color: var(--on-blue); font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; }
-@media (hover: hover) { .url-fetch-btn:hover { background: var(--blue); filter: brightness(1.12); color: var(--on-blue); } }
+.url-fetch-btn { height: 28px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--in-bg); color: var(--in-fg); font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; }
+@media (hover: hover) { .url-fetch-btn:hover { background: var(--in-bg); filter: brightness(1.18); color: var(--in-fg); } }
 .header-actions { gap: 8px; }
 .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 34px; padding: 0 14px; border: 0; border-radius: 999px; background: var(--soft); color: var(--text); font-size: 13px; font-weight: 500; letter-spacing: 0; text-transform: none; }
 .btn.act-in  { background: var(--in-bg);  color: var(--in-fg); }
-.btn.act-out { background: var(--out-bg); color: var(--out-fg); }
+.btn.act-out { background: var(--blue); color: var(--on-blue); }
 .btn.act-start { margin-left: 10px; }
 @media (hover: hover) { .btn:hover, .btn.act-in:hover, .btn.act-out:hover { filter: brightness(1.18); border-color: transparent; color: inherit; } }
 .btn-icon { width: 34px; height: 34px; border: 0; border-radius: 50%; background: var(--soft); color: var(--muted); }
@@ -610,7 +606,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
     <button class="tbtn" onclick="insertTable()" aria-label="Insérer un tableau"><svg class="ic" aria-hidden="true"><use href="#i-table"/></svg> Table</button>
   </div>
   <div class="grp" role="group" aria-label="Défilement">
-    <button class="tbtn" onclick="toggleSync()" id="sync-btn" aria-pressed="true" aria-label="Synchroniser le défilement de l'éditeur et de l'aperçu"><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg> Sync</button>
+    <button class="tbtn" onclick="toggleSync()" id="sync-btn" aria-pressed="true" aria-label="Synchroniser le défilement de l'éditeur et de l'aperçu" title="Défilement synchronisé : quand tu fais défiler l'éditeur, l'aperçu suit. Clique pour activer ou désactiver."><svg class="ic" aria-hidden="true"><use href="#i-sync"/></svg> Sync</button>
   </div>
 </div>
 
@@ -642,7 +638,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.12.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">20/10/2026</span></span>
+  <span class="status-version">v1.12.1 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -932,7 +928,7 @@ editor.addEventListener('input',  render);
 function toggleSync() {
   syncScroll = !syncScroll;
   document.getElementById('sync-btn').setAttribute('aria-pressed', String(syncScroll));
-  toast('Sync ' + (syncScroll ? 'activé' : 'désactivé'));
+  toast('Défilement synchronisé ' + (syncScroll ? 'activé' : 'désactivé'));
 }
 editor.addEventListener('scroll', () => {
   if (!syncScroll) return;
@@ -1920,7 +1916,7 @@ function exportHTML() {
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-light.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"><\/script>
 <style>
-body{font-family:Georgia,serif;max-width:860px;margin:60px auto;padding:0 24px;line-height:1.8;color:#1a1a1a;background:#fff;font-size:17px}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Inter,Roboto,system-ui,sans-serif;max-width:860px;margin:60px auto;padding:0 24px;line-height:1.8;color:#1a1a1a;background:#fff;font-size:17px}
 h1,h2,h3,h4{font-weight:600;margin-top:1.8em}
 h2{border-bottom:1px solid #ddd;padding-bottom:6px}h3{color:#c4832a}h4{color:#2a72c4}
 code{background:#f0f0f0;padding:2px 5px;border-radius:3px;font-size:.88em;font-family:monospace}
