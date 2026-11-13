@@ -660,7 +660,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.17.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">13/11/2026</span></span>
+  <span class="status-version">v1.17.1 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">13/11/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -888,7 +888,7 @@ Sur un texte brut sans titres, **Auto-titres** repère les lignes qui ressemblen
 
 Une fenêtre affiche la proposition. Tu décoches les faux positifs, tu ajustes les niveaux, puis tu appliques. Ctrl+Z annule.
 
-Sur une conversation copiée depuis Slack, **Auto-titres** reconnaît les messages : chaque en-tête « nom · heure » devient un titre, les boutons de Slack (Traduire, Tout télécharger…) disparaissent et les morceaux collés ensemble sont séparés.
+Sur une conversation copiée depuis Slack, **Auto-titres** reconnaît les messages : chaque message devient un titre au nom de son auteur (avec la date quand Slack la fournit), les boutons de Slack (Traduire, Tout télécharger…) disparaissent et les morceaux collés ensemble sont séparés.
 
 ### Sommaire dynamique
 
@@ -1175,9 +1175,11 @@ function slackToMarkdown(text) {
   const intro = slackClean(preClean);
   if (intro.length) out.push(...intro.map(l => l && !l.startsWith('*') && !l.startsWith('-') ? '*' + l + '*' : l), '');
   for (const m of msgs) {
-    const when = m.url ? `[${m.when}](${m.url})` : m.when;
+    // Une heure seule (sans le jour) brouille la chronologie du fil : on n'affiche alors que l'auteur
+    const timeOnly = /^\d{1,2}\s?(?:h|:)\s?\d{2}(?:\s?[AaPp]\.?[Mm]\.?)?$/.test(m.when);
+    const when = timeOnly ? '' : ' · ' + (m.url ? `[${m.when}](${m.url})` : m.when);
     levels.set(out.length, title ? 2 : 1);
-    out.push(`${m.name} · ${when}`, '');
+    out.push(m.name + when, '');
     const body = slackClean(m.body);
     if (body.length) out.push(...body, '');
   }
@@ -1194,7 +1196,7 @@ function autoStructure() {
   if (slack) {
     openHeadingPreview(slack.lines, slack.levels, {
       title: 'Conversation Slack détectée',
-      hint: `${slack.count} messages reconnus. Chaque en-tête « nom · heure » devient un titre, les boutons de Slack (Traduire, Tout télécharger…) sont retirés et les morceaux collés ensemble sont séparés. Rien n'est modifié tant que tu n'as pas cliqué sur « Appliquer ».`
+      hint: `${slack.count} messages reconnus. Chaque message devient un titre avec le nom de l'auteur (et la date quand Slack la fournit), les boutons de Slack (Traduire, Tout télécharger…) sont retirés et les morceaux collés ensemble sont séparés. Rien n'est modifié tant que tu n'as pas cliqué sur « Appliquer ».`
     });
     return;
   }
