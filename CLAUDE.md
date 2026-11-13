@@ -33,7 +33,7 @@ The app is a split-pane Markdown editor with a live preview. All logic is in a s
 | `fetchURL()` | CORS proxy cascade (corsproxy.io → allorigins.win × 2) with 12s timeout per proxy |
 | `htmlToMarkdown()` | DOM-based HTML-to-Markdown converter: strips nav/footer/ads, finds `<main>`/`<article>`, converts nodes recursively |
 | `mdToHTML()` / `buildTOC()` | Markdown → HTML with heading ids; replaces the `<!-- TOC -->` marker with a live table of contents built from the document's headings (H1–H4) |
-| `autoStructure()` | Heuristic heading detection on plain text, with a preview dialog (`openHeadingPreview`) before applying. A pasted Slack conversation is detected first by `slackToMarkdown()` (≥ 2 lines `Name  [time]`, plain or linked) and restructured: one heading per message (author only; the date is added only when Slack provides the day, a bare time is dropped), Slack UI noise removed, glued fragments split |
+| `autoStructure()` | Heuristic heading detection on plain text, with a preview dialog (`openHeadingPreview`) before applying. A Slack conversation is formatted automatically on paste (`paste` listener → `slackFormat()`, Undo bar restores the raw text) and is also detected first by `slackToMarkdown()` when Auto-titres runs (≥ 2 lines `Name  [time]`, plain or linked) and restructured: one heading per message (author only; the date is added only when Slack provides the day, a bare time is dropped), Slack UI noise removed, glued fragments split |
 | `exportHTML()` | Generates a self-contained standalone HTML file with inlined CSS |
 | Divider resize | Drag-to-resize the editor/preview split via `mousedown`/`mousemove`/`mouseup` |
 

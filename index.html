@@ -660,7 +660,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.17.1 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">13/11/2026</span></span>
+  <span class="status-version">v1.18.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">13/11/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -888,7 +888,7 @@ Sur un texte brut sans titres, **Auto-titres** repère les lignes qui ressemblen
 
 Une fenêtre affiche la proposition. Tu décoches les faux positifs, tu ajustes les niveaux, puis tu appliques. Ctrl+Z annule.
 
-Sur une conversation copiée depuis Slack, **Auto-titres** reconnaît les messages : chaque message devient un titre au nom de son auteur (avec la date quand Slack la fournit), les boutons de Slack (Traduire, Tout télécharger…) disparaissent et les morceaux collés ensemble sont séparés.
+Quand tu colles une conversation copiée depuis Slack, elle est mise en forme automatiquement : chaque message devient un titre au nom de son auteur (avec la date quand Slack la fournit), les boutons de Slack (Traduire, Tout télécharger…) disparaissent et les morceaux collés ensemble sont séparés. Le bouton **Annuler** qui apparaît en bas de l'écran rend le texte brut.
 
 ### Sommaire dynamique
 
@@ -1186,6 +1186,27 @@ function slackToMarkdown(text) {
   while (out.length && !out[out.length - 1].trim()) out.pop();
   return { lines: out, levels, count: msgs.length };
 }
+
+// Texte Slack mis en forme directement (titres appliqués), pour le collage automatique
+function slackFormat(text) {
+  const r = slackToMarkdown(text);
+  if (!r) return null;
+  return r.lines.map((l, i) => r.levels.has(i) ? '#'.repeat(r.levels.get(i)) + ' ' + l : l).join('\n');
+}
+// Collage d'une conversation Slack : mise en forme immédiate, avec « Annuler » pour retrouver le texte brut
+editor.addEventListener('paste', e => {
+  const raw = e.clipboardData && e.clipboardData.getData('text/plain');
+  const md = raw && slackFormat(raw);
+  if (!md) return;
+  e.preventDefault();
+  const v = editor.value, a = editor.selectionStart, b = editor.selectionEnd;
+  const before = { text: v.slice(0, a) + raw + v.slice(b), file: currentFile, mode: document.getElementById('sb-mode').textContent };
+  if (!document.execCommand('insertText', false, md)) editor.setRangeText(md, a, b, 'end');
+  document.getElementById('sb-mode').textContent = 'SLACK→MD';
+  takeSnap();
+  render(); updateCursor();
+  showUndoBar('Conversation Slack mise en forme.', { ...before, expect: editor.value });
+});
 
 /* Détection automatique des titres dans un texte brut :
    lignes courtes, isolées, sans ponctuation finale, commençant par une majuscule.
