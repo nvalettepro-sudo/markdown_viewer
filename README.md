@@ -11,7 +11,7 @@ https://nvalettepro-sudo.github.io/markdown_viewer/
 - **Import .md / .txt** par bouton ou glisser-déposer
 - **Import PDF** — extraction du texte et conversion automatique en Markdown
 - **Import URL** — récupère une page web et la convertit en Markdown propre
-- **Auto-titres** — détecte automatiquement les titres H1–H4 dans un texte brut (bouton ⚡ de la barre d'outils), avec aperçu pour valider ou corriger les niveaux avant application
+- **Auto-titres** — détecte automatiquement les titres H1–H4 dans un texte brut (bouton ⚡ de la barre d'outils), avec aperçu pour valider ou corriger les niveaux avant application ; reconnaît aussi une conversation Slack collée (un titre par message : auteur · heure)
 - **Sommaire dynamique** — bouton ☰ : insère un marqueur `<!-- TOC -->` à la position du curseur ; le sommaire (H1–H4, avec liens cliquables) se met à jour tout seul à chaque modification des titres
 - **Export** `.md` ou `.html` standalone
 - **Frontmatter YAML** affiché sous forme de tableau de métadonnées

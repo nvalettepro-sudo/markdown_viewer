@@ -279,7 +279,7 @@ header {
   scrollbar-width: thin;
   scrollbar-color: var(--border) transparent;
 }
-.md-body { max-width: 780px; font-size: 1rem; }
+.md-body { max-width: 780px; font-size: 1rem; font-variant-ligatures: no-contextual; font-feature-settings: "calt" 0; }
 .md-body p, .md-body li, .md-body blockquote { max-width: 68ch; text-wrap: pretty; }
 .md-body h1, .md-body h2, .md-body h3, .md-body h4 { text-wrap: balance; }
 .md-body h1 { font-size: 2.2em; font-weight: 600; letter-spacing: -0.025em; color: var(--text); line-height: 1.15; margin: 0.4em 0 0.6em; }
@@ -598,7 +598,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
 <!-- ── Toolbar ── -->
 <div class="toolbar" role="toolbar" aria-label="Mise en forme du Markdown">
   <div class="grp" role="group" aria-label="Titres automatiques et sommaire">
-    <button class="tbtn key" onclick="autoStructure()" aria-label="Détecter automatiquement les titres" title="Détecter automatiquement les titres (H1–H4) dans le texte. Ctrl+Z pour annuler."><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg> Auto-titres</button>
+    <button class="tbtn key" onclick="autoStructure()" aria-label="Détecter automatiquement les titres" title="Détecter automatiquement les titres (H1–H4) dans le texte, y compris dans une conversation Slack collée. Ctrl+Z pour annuler."><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg> Auto-titres</button>
     <button class="tbtn key" onclick="insertTOC()" aria-label="Insérer un sommaire dynamique" title="Insérer un sommaire dynamique à la position du curseur"><svg class="ic" aria-hidden="true"><use href="#i-list"/></svg> Sommaire</button>
   </div>
   <div class="grp" role="group" aria-label="Éditeur">
@@ -660,7 +660,7 @@ input[type="checkbox"] { accent-color: var(--accent); }
   <span id="sb-file" class="status-file">Sans titre.md</span>
   <span class="status-tagline" style="margin-left:auto">HTML Standalone · MD + PDF + OCR + URL</span>
   <span class="status-tagline" aria-hidden="true" style="color:var(--border)">|</span>
-  <span class="status-version">v1.16.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">21/10/2026</span></span>
+  <span class="status-version">v1.17.0 <span aria-hidden="true" style="color:var(--border)">·</span> <span style="color:var(--muted)">13/11/2026</span></span>
 </div>
 
 <!-- ── Éléments cachés ── -->
@@ -683,8 +683,8 @@ input[type="checkbox"] { accent-color: var(--accent); }
 </div>
 <div class="hp-overlay" id="hp-overlay" onclick="if(event.target===this) closeHeadingPreview()">
   <div class="hp-box" role="dialog" aria-modal="true" aria-labelledby="hp-title">
-    <div class="hp-head"><span id="hp-title"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg> Titres détectés</span> <span id="hp-count" aria-live="polite"></span></div>
-    <div class="hp-hint">Décoche les faux positifs et ajuste les niveaux. Rien n'est modifié tant que tu n'as pas cliqué sur « Appliquer ».</div>
+    <div class="hp-head"><span id="hp-title"><svg class="ic" aria-hidden="true"><use href="#i-zap"/></svg> <span id="hp-title-text">Titres détectés</span></span> <span id="hp-count" aria-live="polite"></span></div>
+    <div class="hp-hint" id="hp-hint">Décoche les faux positifs et ajuste les niveaux. Rien n'est modifié tant que tu n'as pas cliqué sur « Appliquer ».</div>
     <div class="hp-list" id="hp-list"></div>
     <div class="hp-actions">
       <button class="quality-warn-btn qw-close" onclick="closeHeadingPreview()">Annuler</button>
@@ -888,6 +888,8 @@ Sur un texte brut sans titres, **Auto-titres** repère les lignes qui ressemblen
 
 Une fenêtre affiche la proposition. Tu décoches les faux positifs, tu ajustes les niveaux, puis tu appliques. Ctrl+Z annule.
 
+Sur une conversation copiée depuis Slack, **Auto-titres** reconnaît les messages : chaque en-tête « nom · heure » devient un titre, les boutons de Slack (Traduire, Tout télécharger…) disparaissent et les morceaux collés ensemble sont séparés.
+
 ### Sommaire dynamique
 
 **Sommaire** insère un marqueur (\`<!-- TOC -->\`) à la position du curseur. Le sommaire en haut de ce guide en est un exemple : il se met à jour tout seul quand tu modifies, ajoutes ou supprimes un titre.
@@ -1069,11 +1071,133 @@ function insert(p) {
   const s = editor.selectionStart, ls = editor.value.lastIndexOf('\n', s-1) + 1;
   editor.setRangeText(p, ls, ls, 'end'); editor.focus(); render();
 }
+/* ══════════════════════════════════════════════
+   Conversation Slack collée : chaque en-tête « Nom  [heure] » devient un titre,
+   les éléments d'interface sont retirés, les morceaux collés ensemble sont séparés.
+   Gère le texte brut (« Nom  [17 h 13] ») et le texte avec liens (« Nom  [Le 18 juin à 17 h 13](lien) »).
+══════════════════════════════════════════════ */
+const SLACK_HDR = /^(.*?)\s*\[([^\]\n]*\d{1,2}\s?(?:h|:)\s?\d{2}[^\]\n]*)\](?:\((https?:\/\/[^)\s]+)\))?\s*$/u;
+const SLACK_NAME = /^\p{Lu}[\p{L}\p{M}'’.\-]*$/u;
+const SLACK_GLUED = /^(.*[\p{Ll}\d.:;·)\]])(\p{Lu}[\p{L}\p{M}'’.\-]+)$/u;
+const SLACK_PARTICLE = /^(de|du|des|la|le|van|von|der|den|di|da|dos|del|bin|al|el|ten)$/;
+const SLACK_NOISE = /^(Traduire|Translate|Tout télécharger|Download all|Binaire|Binary|Afficher les listes de tâches)$/i;
+const SLACK_REPLIES = /^(\d+)\s*(réponses?|replies|reply)$/i;
+
+// Sépare le nom de l'auteur de ce qui le précède sur la même ligne (« 5 réponsesMatti Kannala »)
+function slackHeader(line) {
+  const m = line.match(SLACK_HDR);
+  if (!m) return null;
+  const toks = m[1].trim().split(/\s+/).filter(Boolean);
+  const name = [];
+  while (toks.length && name.length < 4) {
+    const t = toks[toks.length - 1];
+    if (SLACK_NAME.test(t)) { name.unshift(t); toks.pop(); continue; }
+    if (name.length && SLACK_PARTICLE.test(t) && toks.length > 1 && SLACK_NAME.test(toks[toks.length - 2])) { name.unshift(t); toks.pop(); continue; }
+    const g = name.length && t.match(SLACK_GLUED);
+    if (g) { name.unshift(g[2]); toks[toks.length - 1] = g[1]; }
+    break;
+  }
+  if (!name.length) return null;
+  return { name: name.join(' '), when: m[2].trim(), url: m[3] || '', junk: toks.join(' ').trim() };
+}
+
+// Ligne de pièces jointes collée : « 3 pièces jointes 1xA.ifcBinaireB.ifcBinaire »
+function slackAttachments(t) {
+  const m = t.match(/^(\d+\s+(?:pièces?\s+jointes?|attachments?|fichiers?|files?))\s*(.*)$/i);
+  if (!m || !/Binaire|Binary/.test(m[2])) return null;
+  const files = m[2].split(/Binaire|Binary/).map(f => f.trim().replace(/^\d+x(?=\S)/, '')).filter(Boolean);
+  return ['*' + m[1] + '*', '', ...files.map(f => '- ' + f)];
+}
+
+const SLACK_SENT = /^(Aussi envoyé vers le canal|Also sent to the channel)$/i;
+function slackClean(raw) {
+  const out = [];
+  let inAtt = false;
+  for (const l of raw) {
+    const t = l.trim();
+    if (!t) { out.push(''); inAtt = false; continue; }
+    if (SLACK_NOISE.test(t) || /^\[(Binaire|Binary)\]\([^)]*\)$/.test(t)) continue;
+    // Liste de fichiers joints (version avec liens) : « 3 pièces jointes » puis un lien par fichier
+    if (/^\d+\s+(pièces?\s+jointes?|attachments?|fichiers?|files?)$/i.test(t)) { out.push('*' + t + '*', ''); inAtt = true; continue; }
+    if (inAtt && /^\[[^\]]+\]\([^)]+\)$/.test(t)) { out.push('- ' + t); continue; }
+    inAtt = false;
+    if (/^[^\s\/\\\[\]()]+\.[A-Za-z0-9]{2,5}$/.test(t) && !/^\d/.test(t)) { out.push('Pièce jointe : ' + t); continue; }
+    if (SLACK_REPLIES.test(t)) { out.push('', '---', '', '*' + t + '*'); continue; }
+    if (SLACK_SENT.test(t)) { out.push('*' + t + '*'); continue; }
+    const att = slackAttachments(t);
+    if (att) { out.push(...att); continue; }
+    out.push(l.replace(/\s+$/, '').replace(/\)\[@/g, ') [@'));
+  }
+  while (out.length && !out[0].trim()) out.shift();
+  while (out.length && !out[out.length - 1].trim()) out.pop();
+  return out.filter((l, i) => l.trim() || (out[i - 1] || '').trim());
+}
+
+function slackToMarkdown(text) {
+  const lines = text.replace(/\r\n?/g, '\n').split('\n');
+  const pre = [], msgs = [];
+  let cur = null;
+  for (const line of lines) {
+    const h = slackHeader(line);
+    if (!h) { (cur ? cur.body : pre).push(line); continue; }
+    let junk = h.junk;
+    const target = cur ? cur.body : pre;
+    // Ce qui précède le nom sur la même ligne appartient au message précédent
+    let replies = null;
+    const rm = junk.match(/(\d+)\s*(réponses?|replies|reply)$/i);
+    if (rm) { replies = rm[0]; junk = junk.slice(0, rm.index).trim(); }
+    if (cur && /^\S+\.[A-Za-z0-9]{2,5}$/.test(junk)) { target.push('', 'Pièce jointe : ' + junk); junk = ''; }
+    if (junk) target.push(junk);
+    if (replies) target.push(replies);
+    const carry = [];
+    while (target.length && (!target[target.length - 1].trim() || SLACK_SENT.test(target[target.length - 1].trim()))) {
+      const l = target.pop();
+      if (l.trim()) carry.unshift(l.trim());
+    }
+    cur = { ...h, body: carry };
+    msgs.push(cur);
+  }
+  if (msgs.length < 2) return null;
+
+  const out = [], levels = new Map();
+  // Préambule : « Fil de discussion » (parfois collé au texte qui suit) devient le titre principal
+  let title = false;
+  const preClean = [];
+  for (const l of pre) {
+    const m = !title && l.trim().match(/^#*\s*(Fil de discussion|Thread)\s*(.*)$/i);
+    if (m) {
+      title = true;
+      levels.set(out.length, 1); out.push(m[1]); out.push('');
+      const rest = m[2].replace(/[\s·]+$/, '').trim();
+      if (rest) preClean.push(rest);
+    } else preClean.push(l.replace(/[\s·]+$/, ''));
+  }
+  const intro = slackClean(preClean);
+  if (intro.length) out.push(...intro.map(l => l && !l.startsWith('*') && !l.startsWith('-') ? '*' + l + '*' : l), '');
+  for (const m of msgs) {
+    const when = m.url ? `[${m.when}](${m.url})` : m.when;
+    levels.set(out.length, title ? 2 : 1);
+    out.push(`${m.name} · ${when}`, '');
+    const body = slackClean(m.body);
+    if (body.length) out.push(...body, '');
+  }
+  while (out.length && !out[out.length - 1].trim()) out.pop();
+  return { lines: out, levels, count: msgs.length };
+}
+
 /* Détection automatique des titres dans un texte brut :
    lignes courtes, isolées, sans ponctuation finale, commençant par une majuscule.
    Niveau : 1er candidat = H1 (si aucun H1 existant) ; les autres selon le volume
    de texte qui les suit (plus de contenu = niveau plus haut). */
 function autoStructure() {
+  const slack = slackToMarkdown(editor.value);
+  if (slack) {
+    openHeadingPreview(slack.lines, slack.levels, {
+      title: 'Conversation Slack détectée',
+      hint: `${slack.count} messages reconnus. Chaque en-tête « nom · heure » devient un titre, les boutons de Slack (Traduire, Tout télécharger…) sont retirés et les morceaux collés ensemble sont séparés. Rien n'est modifié tant que tu n'as pas cliqué sur « Appliquer ».`
+    });
+    return;
+  }
   const lines = editor.value.split('\n');
   const n = lines.length;
   const skip = new Array(n).fill(false);
@@ -1170,8 +1294,11 @@ function autoStructure() {
 
 /* Aperçu des titres proposés : l'éditeur n'est modifié qu'au clic sur « Appliquer » */
 let hpState = null;
+const HP_HINT = "Décoche les faux positifs et ajuste les niveaux. Rien n'est modifié tant que tu n'as pas cliqué sur « Appliquer ».";
 const headingText = l => l.trim().replace(/^#{1,6}(?=\p{L})/u, '').replace(/\s*:$/, '');
-function openHeadingPreview(lines, levels) {
+function openHeadingPreview(lines, levels, opts = {}) {
+  document.getElementById('hp-title-text').textContent = opts.title || 'Titres détectés';
+  document.getElementById('hp-hint').textContent = opts.hint || HP_HINT;
   hpState = { lines, items: [...levels.entries()].sort((a, b) => a[0] - b[0]).map(([idx, level]) => ({ idx, level, on: true })) };
   const list = document.getElementById('hp-list');
   list.textContent = '';
@@ -1186,7 +1313,7 @@ function openHeadingPreview(lines, levels) {
     for (let l = 1; l <= 4; l++) { const o = document.createElement('option'); o.value = l; o.textContent = 'H' + l; if (l === it.level) o.selected = true; sel.appendChild(o); }
     const txt = document.createElement('span');
     txt.className = 'hp-text';
-    txt.textContent = headingText(lines[it.idx]);
+    txt.textContent = headingText(lines[it.idx]).replace(/\[([^\]]*)\]\([^)]*\)/g, '$1');
     const ln = document.createElement('span');
     ln.className = 'hp-ln';
     ln.textContent = 'L' + (it.idx + 1);
